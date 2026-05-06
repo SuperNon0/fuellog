@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FuelLog</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+/* FIX carte derrière modal — Leaflet a un z-index de 400+ par défaut */
+.leaflet-pane { z-index: 1 !important; }
+.leaflet-control { z-index: 2 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+.modal-overlay { z-index: 500 !important; }
+.fab { z-index: 400 !important; }
+.toast { z-index: 600 !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="https://super-nono.cc" class="logo">fuel<span>log</span></a>
+  <div class="header-stat">
+    <strong id="h-total">—</strong>
+    <small>dépensé au total</small>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('historique',this)" id="nav-histo">📋 Historique</button>
+  <button onclick="showTab('stats',this)">📊 Stats</button>
+  <button onclick="showTab('precision',this)">🎯 Précision ODB</button>
+  <button onclick="showTab('stations',this)">⛽ Stations</button>
+</nav>
+
+<main>
+
+  <!-- HISTORIQUE -->
+  <div id="tab-historique" class="tab active">
+    <div id="phase1-banner" style="display:none" class="phase1-banner">
+      <div class="phase1-top">
+        <div class="phase1-left">
+          <div class="pulse"></div>
+          <div>
+            <div class="phase1-title">
+              <span id="phase1-date">—</span>
+              <span class="tag tag-SP95" id="phase1-type">SP95</span>
+            </div>
+            <div class="phase1-sub">Plein en attente — Phase 2 à compléter</div>
+          </div>
+        </div>
+        <button class="btn-p2" id="btn-phase1-p2">Phase 2</button>
+      </div>
+      <div class="phase1-details">
+        <div class="phase1-detail">Départ : <span id="phase1-km">—</span></div>
+        <div class="phase1-detail">ODB : <span id="phase1-odb">—</span></div>
+        <div class="phase1-detail">Payé : <span id="phase1-total">—</span></div>
+        <div class="phase1-detail">Station : <span id="phase1-station">—</span></div>
+      </div>
+      <div style="margin-top:.6rem">
+        <button class="btn-edit" id="btn-phase1-edit" style="font-size:.62rem">✏️ Modifier</button>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-top">
+        <h2>Historique</h2>
+        <button class="btn-clear" onclick="clearAll()">Tout effacer</button>
+      </div>
+      <div class="rows" id="histo-rows"></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="tab-stats" class="tab">
+    <div class="stats-grid">
+      <div class="stat-card y"><div class="stat-label">Total dépensé</div><div class="stat-value y" id="st-total">—</div><div class="stat-unit">€</div></div>
+      <div class="stat-card g"><div class="stat-label">Total litres</div><div class="stat-value g" id="st-litres">—</div><div class="stat-unit">L</div></div>
+      <div class="stat-card o"><div class="stat-label">Prix moy/L</div><div class="stat-value o" id="st-prixmoy">—</div><div class="stat-unit">€/L</div></div>
+      <div class="stat-card"><div class="stat-label">Km totaux</div><div class="stat-value" id="st-km">—</div><div class="stat-unit">km</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card y"><div class="stat-label">Dernier prix/L</div><div class="stat-value y" id="s-prixL">—</div><div class="stat-unit">€/litre</div></div>
+      <div class="stat-card g"><div class="stat-label">Km moy./plein</div><div class="stat-value g" id="s-km-moy">—</div><div class="stat-unit">km</div></div>
+      <div class="stat-card o"><div class="stat-label">Dépense moy.</div><div class="stat-value o" id="s-dep-moy">—</div><div class="stat-unit">€/plein</div></div>
+      <div class="stat-card p"><div class="stat-label">Précision ODB</div><div class="stat-value p" id="s-prec">—</div><div class="stat-unit">% moy.</div></div>
+    </div>
+    <div class="chart-card"><div class="chart-title">Dépense par plein (€)</div><canvas id="cD"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Prix au litre (€)</div><canvas id="cP"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Km parcourus par plein</div><canvas id="cK"></canvas></div>
+  </div>
+
+  <!-- PRECISION -->
+  <div id="tab-precision" class="tab">
+    <div class="prec-summary">
+      <div class="prec-top">
+        <div class="prec-gauge">
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="37" fill="none" stroke="#2a2d35" stroke-width="7"/>
+            <circle id="gauge-circle" cx="45" cy="45" r="37" fill="none" stroke="#a78bfa" stroke-width="7"
+              stroke-dasharray="233" stroke-dashoffset="233" stroke-linecap="round" style="transition:stroke-dashoffset .8s ease"/>
+          </svg>
+          <div class="prec-gauge-text">
+            <div class="prec-gauge-pct" id="gauge-pct">—</div>
+            <div class="prec-gauge-lbl">moy.</div>
+          </div>
+        </div>
+        <div class="prec-info"><h3>Précision ODB</h3><p id="prec-desc">Complète la Phase 2 d'un plein pour voir l'analyse.</p></div>
+      </div>
+    </div>
+    <div class="chart-card"><div class="chart-title">Précision par plein (%)</div><canvas id="cPrec"></canvas></div>
+    <div class="table-card" style="margin-top:1rem"><div style="overflow-x:auto" id="prec-table"></div></div>
+  </div>
+
+  <!-- STATIONS -->
+  <div id="tab-stations" class="tab">
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem">
+      <button class="tab-btn-s active" onclick="switchStationsTab('proches',this)">📍 Proches</button>
+      <button class="tab-btn-s" onclick="switchStationsTab('favoris',this)">⭐ Favoris</button>
+    </div>
+    <div id="s-tab-proches">
+      <div class="s-search-bar">
+        <input type="text" id="stations-search" placeholder="Ville ou code postal…" onkeydown="if(event.key==='Enter')searchStationsByCity()">
+        <button class="btn-s-search" onclick="searchStationsByCity()">Rechercher</button>
+      </div>
+      <div class="s-filters">
+        <button class="s-pill active" onclick="setStationsFilter('SP95',this)">SP95 / E10</button>
+        <button class="s-pill" onclick="setStationsFilter('SP98',this)">SP98</button>
+        <button class="s-pill" onclick="setStationsFilter('Diesel',this)">Diesel</button>
+        <button class="s-pill" onclick="setStationsFilter('E85',this)">E85</button>
+      </div>
+      <div class="s-sort-bar">
+        <button class="s-sort-pill active" onclick="setSort('distance',this)">📍 Plus proche</button>
+        <button class="s-sort-pill" onclick="setSort('price',this)">💰 Moins cher</button>
+      </div>
+      <div id="stations-loading" class="s-loading" style="display:none">⏳ Recherche des stations proches…</div>
+      <div id="stations-error" class="s-error" style="display:none"></div>
+      <div id="stations-content" style="display:none">
+        <div id="stations-map"></div>
+        <div class="map-resize-handle" id="map-resize-handle"><span>⠿</span></div>
+        <div class="section-label">Stations à proximité</div>
+        <div id="stations-list"></div>
+        <button id="btn-voir-plus-s" class="btn-voir-plus-s" onclick="voirPlusStations()" style="display:none">Voir plus</button>
+      </div>
+    </div>
+    <div id="s-tab-favoris" style="display:none">
+      <div class="fav-add-id">
+        <input type="text" id="fav-id-input" placeholder="ID de station (ex: 34170004)…" inputmode="numeric">
+        <button onclick="addFavoriById()">＋ Ajouter</button>
+      </div>
+      <div class="s-filters">
+        <button class="s-pill active" onclick="setStationsFilter('SP95',this);renderFavorisTab()">SP95</button>
+        <button class="s-pill" onclick="setStationsFilter('SP98',this);renderFavorisTab()">SP98</button>
+        <button class="s-pill" onclick="setStationsFilter('Diesel',this);renderFavorisTab()">Diesel</button>
+        <button class="s-pill" onclick="setStationsFilter('E85',this);renderFavorisTab()">E85</button>
+      </div>
+      <div id="favoris-stations-list"></div>
+      <div id="favoris-stations-empty" class="s-fav-empty" style="display:none">Aucune station favorite.<br>Ajoute-en depuis l'onglet Proches avec ⭐</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- BOUTON FLOTTANT -->
+<button class="fab" onclick="openSaisie()">+</button>
+
+<!-- MODAL SAISIE -->
+<div class="modal-overlay" id="modal-saisie" onclick="closeSaisie(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nouveau plein</div>
+    <div id="km-notice" class="km-notice" style="display:none;margin-bottom:1rem">
+      📍 Km de départ repris : <strong id="km-notice-val">—</strong> km
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>Date</label><input type="date" id="f-date"></div>
+      <div class="field"><label>Carburant</label>
+        <select id="f-type">
+          <option value="SP95">SP95 / E10</option>
+          <option value="SP98">SP98</option>
+          <option value="Diesel">Diesel</option>
+          <option value="E85">E85</option>
+        </select>
+      </div>
+      <div id="km-manual" class="field full" style="display:none">
+        <label>Kilométrage de départ (premier plein)</label>
+        <input type="number" id="f-km-depart" placeholder="ex: 146716" min="0" inputmode="numeric">
+      </div>
+      <div class="field full">
+        <label>Station</label>
+        <select id="f-station-select" onchange="onStationSelect(this)">
+          <option value="">-- Sélectionner une station --</option>
+          <optgroup label="✏️ Autre"><option value="autre">Saisir manuellement…</option></optgroup>
+        </select>
+      </div>
+      <div class="field full" id="f-station-manual" style="display:none">
+        <label>Nom de la station</label>
+        <input type="text" id="f-station-manual-input" placeholder="ex: Total, Leclerc…">
+      </div>
+      <div class="prix-confirm" id="prix-confirm">
+        <div class="prix-confirm-top">
+          <div>
+            <div class="prix-confirm-label">Prix proposé</div>
+            <div class="prix-confirm-maj" id="prix-confirm-maj">—</div>
+          </div>
+          <div class="prix-confirm-val" id="prix-confirm-val">—</div>
+        </div>
+        <div class="prix-confirm-warn">⚠️ Le prix a peut-être changé depuis cette mise à jour.</div>
+        <div class="prix-confirm-btns">
+          <button class="btn-confirm-ok" onclick="confirmerPrix()">Utiliser ce prix</button>
+          <button class="btn-confirm-non" onclick="refuserPrix()">Saisir manuellement</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Estimation ODB (km)</label>
+        <input type="number" id="f-estim" placeholder="ex: 866" min="0" inputmode="numeric">
+        <span class="hint">Ce que la voiture affiche après le plein</span>
+      </div>
+      <div class="field"><label>Prix total (€)</label><input type="number" id="f-total" placeholder="ex: 75.06" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="field"><label>Litres (optionnel)</label><input type="number" id="f-litres" placeholder="ex: 42.5" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="field full"><label>Prix / litre € (optionnel)</label><input type="number" id="f-prixL" placeholder="ex: 1.829" min="0" step="0.001" inputmode="decimal"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="ajouterPhase1()">Enregistrer ce plein</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PHASE 2 -->
+<div class="modal-overlay" id="modal-p2" onclick="closeModalP2(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="color:var(--pending)">Compléter — Phase 2</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-fields">
+      <div class="field">
+        <label>Kilométrage total atteint (km)</label>
+        <input type="number" id="m-km-total" placeholder="ex: 147394" min="0" inputmode="numeric">
+        <span class="hint">Le compteur au moment du prochain plein</span>
+      </div>
+      <div class="field">
+        <label>Estimation ODB restante (km)</label>
+        <input type="number" id="m-estim-restante" placeholder="ex: 95" min="0" inputmode="numeric">
+        <span class="hint">Ce que la voiture affiche quand tu arrives à la station</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModalP2()">Annuler</button>
+      <button class="btn-ok" onclick="validerPhase2()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER -->
+<div class="modal-overlay" id="modal-edit" onclick="closeModalEdit(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Modifier ce plein</div>
+    <button class="btn-phase1" onclick="repasserPhase1()">↩️ Repasser en Phase 1</button>
+    <div class="modal-edit-grid">
+      <div class="modal-section-label">Infos générales</div>
+      <div class="field"><label>Date</label><input type="date" id="e-date"></div>
+      <div class="field"><label>Carburant</label>
+        <select id="e-type">
+          <option value="SP95">SP95 / E10</option><option value="SP98">SP98</option>
+          <option value="Diesel">Diesel</option><option value="E85">E85</option>
+        </select>
+      </div>
+      <div class="field"><label>Station</label><input type="text" id="e-station"></div>
+      <div class="modal-section-label">Kilométrage</div>
+      <div class="field"><label>Km départ</label><input type="number" id="e-km-depart" min="0" inputmode="numeric"></div>
+      <div class="field"><label>Km total</label><input type="number" id="e-km-total" min="0" inputmode="numeric"><span class="hint">Vide = Phase 1</span></div>
+      <div class="modal-section-label">Ordinateur de bord</div>
+      <div class="field"><label>ODB annoncé (km)</label><input type="number" id="e-estim-plein" min="0" inputmode="numeric"></div>
+      <div class="field"><label>ODB restant (km)</label><input type="number" id="e-estim-restante" min="0" inputmode="numeric"></div>
+      <div class="modal-section-label">Carburant</div>
+      <div class="field"><label>Prix total (€)</label><input type="number" id="e-total" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="field"><label>Litres</label><input type="number" id="e-litres" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="field full"><label>Prix / litre (€)</label><input type="number" id="e-prixL" min="0" step="0.001" inputmode="decimal"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModalEdit()">Annuler</button>
+      <button class="btn-ok" onclick="validerEdit()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RENOMMER STATION -->
+<div class="modal-overlay" id="modal-rename" onclick="closeRenameModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Renommer la station</div>
+    <div class="field" style="margin-bottom:1rem">
+      <label>Nouveau nom</label>
+      <input type="text" id="rename-input" placeholder="Nom de la station…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRenameModal()">Annuler</button>
+      <button class="btn-ok" onclick="validerRename()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/charts.js"></script>
+<script src="/js/precision.js"></script>
+<script src="/js/stations.js"></script>
+<script src="/js/app.js"></script>
+
+</body>
+</html>
