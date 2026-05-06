@@ -15,6 +15,7 @@ function precClass(p){return p>=95?'prec-green':p>=85?'prec-yellow':'prec-orange
 function conso(p){if(!p.litres||p.litres<=0)return null;const km=kmParcourus(p);if(!km||km<=0)return null;return(p.litres/km)*100;}
 function coutKm(p){const km=kmParcourus(p);if(!km||km<=0||!p.total)return null;return(p.total/km)*100;}
 function joursMoyen(arr){if(arr.length<2)return null;const sorted=[...arr].sort((a,b)=>new Date(a.date)-new Date(b.date));let total=0,n=0;for(let i=1;i<sorted.length;i++){const d=(new Date(sorted[i].date)-new Date(sorted[i-1].date))/86400000;if(d>0){total+=d;n++;}}return n>0?Math.round(total/n):null;}
+function coutAnnuelProjecte(arr){if(arr.length<2)return null;const sorted=[...arr].sort((a,b)=>new Date(a.date)-new Date(b.date));const nbJours=(new Date(sorted[sorted.length-1].date)-new Date(sorted[0].date))/86400000;if(nbJours<14)return null;const dep=arr.reduce((s,p)=>s+p.total,0);return Math.round(dep/nbJours*365);}
 
 function toast(msg,err=false){
   const t=document.getElementById('toast');
@@ -326,7 +327,9 @@ function renderStats(){
   document.getElementById('st-conso').textContent=consoVals.length?(consoVals.reduce((a,b)=>a+b,0)/consoVals.length).toFixed(1):'—';
   document.getElementById('st-cout').textContent=coutVals.length?(coutVals.reduce((a,b)=>a+b,0)/coutVals.length).toFixed(2):'—';
   document.getElementById('st-jours').textContent=joursMoyen(data)||'—';
-  renderChartDepense(data);renderChartPrix(data);renderChartKm(complets);renderChartMensuel(data);
+  const proj=coutAnnuelProjecte(data);
+  document.getElementById('st-proj').textContent=proj?proj.toLocaleString('fr-FR'):'—';
+  renderChartDepense(data);renderChartPrix(data);renderChartKm(complets);renderChartConso(complets);renderChartMensuel(data);
 }
 
 // ---- FORM ----
