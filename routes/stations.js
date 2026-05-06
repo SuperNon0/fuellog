@@ -50,14 +50,14 @@ router.get('/', async (req, res) => {
       addPrix('SP98', s.sp98_prix);
       addPrix('E85', s.e85_prix);
 
-      // Fallback : parser le champ prix (JSON string) si les champs plats sont vides
-      if (!Object.keys(prix).length && s.prix) {
+      // Fallback : parser le champ prix pour compléter les prix manquants
+      if (s.prix) {
         try {
           let prixArr = typeof s.prix === 'string' ? JSON.parse(s.prix) : s.prix;
           if (!Array.isArray(prixArr)) prixArr = [prixArr];
           prixArr.forEach(p => {
             const nomKey = mapNom(p['@nom']);
-            if (!nomKey) return;
+            if (!nomKey || prix[nomKey]) return;
             addPrix(nomKey, p['@valeur']);
           });
         } catch(e) {}
