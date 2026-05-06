@@ -1,0 +1,26 @@
+node_modules/
+
+# Base de données locale
+*.db
+*.db-shm
+*.db-wal
+
+# Archives
+*.rar
+*.zip
+*.tar.gz
+
+# Cahiers des charges (infos sensibles)
+cahier_des_charges*
+
+# Variables d'environnement
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,5 +1,7 @@
 const Database = require('better-sqlite3');
-const db = new Database('/opt/fuellog/fuellog.db');
+const path = require('path');
+const DB_PATH = process.env.DB_PATH || '/opt/fuellog/fuellog.db';
+const db = new Database(DB_PATH);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS pleins (
