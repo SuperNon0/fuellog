@@ -8,7 +8,7 @@ const NOM_MAP = {
   'gazole': 'Diesel',
   'diesel': 'Diesel',
   'sp95': 'SP95',
-  'e10': 'SP95',
+  'e10': 'E10',
   'sp98': 'SP98',
   'e85': 'E85',
   'gplc': 'GPLc',
@@ -46,7 +46,8 @@ router.get('/', async (req, res) => {
         if (!isNaN(v) && v > 0.5 && v < 5) prix[key] = Math.round(v * 1000) / 1000;
       };
       addPrix('Diesel', s.gazole_prix);
-      addPrix('SP95', s.sp95_prix || s.e10_prix);
+      addPrix('E10', s.e10_prix);
+      addPrix('SP95', s.sp95_prix);
       addPrix('SP98', s.sp98_prix);
       addPrix('E85', s.e85_prix);
 
@@ -128,7 +129,8 @@ router.get('/by-id/:id', async (req, res) => {
     const prix = {};
     const addPrix = (key, val) => { const v = parseFloat(val); if (!isNaN(v) && v > 0.5 && v < 5) prix[key] = Math.round(v * 1000) / 1000; };
     addPrix('Diesel', s.gazole_prix);
-    addPrix('SP95', s.sp95_prix || s.e10_prix);
+    addPrix('E10', s.e10_prix);
+    addPrix('SP95', s.sp95_prix);
     addPrix('SP98', s.sp98_prix);
     addPrix('E85', s.e85_prix);
     res.json({ station: { id: String(s.id), nom, adresse, ville: s.ville||'', lat: sLat, lng: sLng, prix, maj: 'N/A', services: [] } });

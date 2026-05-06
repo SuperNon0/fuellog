@@ -1,7 +1,7 @@
 let stationsData=[];
 let stationsFavoris=[];
 let stationsVisible=5;
-let stationsFilter='SP95';
+let stationsFilter='E10';
 let stationsSort='distance';
 let stationsLoaded=false;
 let stationsMap=null;
@@ -114,11 +114,12 @@ function renderStationsList(){
         </div>
         <div class="s-prix-main-wrap">
           <div class="s-prix-main">${prix?prix.toFixed(3):'—'}</div>
-          <div class="s-prix-label">€/L ${stationsFilter==='SP95'?'SP95/E10':stationsFilter}</div>
+          <div class="s-prix-label">€/L ${stationsFilter}</div>
         </div>
       </div>
       <div class="s-prices">
-        ${s.prix.SP95?`<span class="s-tag">SP95/E10 ${s.prix.SP95.toFixed(3)}</span>`:''}
+        ${s.prix.E10?`<span class="s-tag">E10 ${s.prix.E10.toFixed(3)}</span>`:''}
+        ${s.prix.SP95?`<span class="s-tag">SP95 ${s.prix.SP95.toFixed(3)}</span>`:''}
         ${s.prix.SP98?`<span class="s-tag s-tag-sp98">SP98 ${s.prix.SP98.toFixed(3)}</span>`:''}
         ${s.prix.Diesel?`<span class="s-tag s-tag-diesel">Diesel ${s.prix.Diesel.toFixed(3)}</span>`:''}
         ${s.prix.E85?`<span class="s-tag s-tag-e85">E85 ${s.prix.E85.toFixed(3)}</span>`:''}
@@ -263,11 +264,12 @@ function renderFavorisTab(){
         </div>
         <div class="s-prix-main-wrap">
           <div class="s-prix-main">${prix?prix.toFixed(3):'—'}</div>
-          <div class="s-prix-label">€/L ${stationsFilter==='SP95'?'SP95/E10':stationsFilter}</div>
+          <div class="s-prix-label">€/L ${stationsFilter}</div>
         </div>
       </div>
       ${s.prix?`<div class="s-prices">
-        ${s.prix.SP95?`<span class="s-tag">SP95/E10 ${s.prix.SP95.toFixed(3)}</span>`:''}
+        ${s.prix.E10?`<span class="s-tag">E10 ${s.prix.E10.toFixed(3)}</span>`:''}
+        ${s.prix.SP95?`<span class="s-tag">SP95 ${s.prix.SP95.toFixed(3)}</span>`:''}
         ${s.prix.SP98?`<span class="s-tag s-tag-sp98">SP98 ${s.prix.SP98.toFixed(3)}</span>`:''}
         ${s.prix.Diesel?`<span class="s-tag s-tag-diesel">Diesel ${s.prix.Diesel.toFixed(3)}</span>`:''}
         ${s.prix.E85?`<span class="s-tag s-tag-e85">E85 ${s.prix.E85.toFixed(3)}</span>`:''}

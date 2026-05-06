@@ -29,7 +29,8 @@ router.get('/refresh-prix', async (req, res) => {
     (data.results || []).forEach(s => {
       const prix = {};
       addPrix(prix, 'Diesel', s.gazole_prix);
-      addPrix(prix, 'SP95', s.sp95_prix || s.e10_prix);
+      addPrix(prix, 'E10', s.e10_prix);
+      addPrix(prix, 'SP95', s.sp95_prix);
       addPrix(prix, 'SP98', s.sp98_prix);
       addPrix(prix, 'E85', s.e85_prix);
       stmt.run(JSON.stringify(prix), String(s.id));
