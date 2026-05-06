@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>FuelLog</title>
+<link rel="manifest" href="/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="/css/style.css">
@@ -87,6 +88,12 @@
       <div class="stat-card o"><div class="stat-label">Dépense moy.</div><div class="stat-value o" id="s-dep-moy">—</div><div class="stat-unit">€/plein</div></div>
       <div class="stat-card p"><div class="stat-label">Précision ODB</div><div class="stat-value p" id="s-prec">—</div><div class="stat-unit">% moy.</div></div>
     </div>
+    <div class="stats-grid">
+      <div class="stat-card g"><div class="stat-label">Conso moy.</div><div class="stat-value g" id="st-conso">—</div><div class="stat-unit">L/100km</div></div>
+      <div class="stat-card o"><div class="stat-label">Coût moy.</div><div class="stat-value o" id="st-cout">—</div><div class="stat-unit">€/100km</div></div>
+      <div class="stat-card p"><div class="stat-label">Fréquence</div><div class="stat-value p" id="st-jours">—</div><div class="stat-unit">jours/plein</div></div>
+    </div>
+    <div class="chart-card"><div class="chart-title">Dépenses par mois (€)</div><canvas id="cM"></canvas></div>
     <div class="chart-card"><div class="chart-title">Dépense par plein (€)</div><canvas id="cD"></canvas></div>
     <div class="chart-card"><div class="chart-title">Prix au litre (€)</div><canvas id="cP"></canvas></div>
     <div class="chart-card"><div class="chart-title">Km parcourus par plein</div><canvas id="cK"></canvas></div>
