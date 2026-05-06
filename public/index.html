@@ -126,7 +126,8 @@
         <button class="btn-s-search" onclick="searchStationsByCity()">Rechercher</button>
       </div>
       <div class="s-filters">
-        <button class="s-pill active" onclick="setStationsFilter('SP95',this)">SP95 / E10</button>
+        <button class="s-pill active" onclick="setStationsFilter('E10',this)">E10</button>
+        <button class="s-pill" onclick="setStationsFilter('SP95',this)">SP95 (E5)</button>
         <button class="s-pill" onclick="setStationsFilter('SP98',this)">SP98</button>
         <button class="s-pill" onclick="setStationsFilter('Diesel',this)">Diesel</button>
         <button class="s-pill" onclick="setStationsFilter('E85',this)">E85</button>
@@ -151,7 +152,8 @@
         <button onclick="addFavoriById()">＋ Ajouter</button>
       </div>
       <div class="s-filters">
-        <button class="s-pill active" onclick="setStationsFilter('SP95',this);renderFavorisTab()">SP95</button>
+        <button class="s-pill active" onclick="setStationsFilter('E10',this);renderFavorisTab()">E10</button>
+        <button class="s-pill" onclick="setStationsFilter('SP95',this);renderFavorisTab()">SP95 (E5)</button>
         <button class="s-pill" onclick="setStationsFilter('SP98',this);renderFavorisTab()">SP98</button>
         <button class="s-pill" onclick="setStationsFilter('Diesel',this);renderFavorisTab()">Diesel</button>
         <button class="s-pill" onclick="setStationsFilter('E85',this);renderFavorisTab()">E85</button>
