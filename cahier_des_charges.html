@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuelLog — Cahier des Charges</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0f11;--surface:#16181c;--card:#1c1f25;--border:#2a2d35;
+  --accent:#e8c547;--accent2:#4fc3a1;--accent3:#e87c47;
+  --text:#f0ede6;--muted:#6b6f7a;--danger:#e85c47;--pending:#a78bfa;
+}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);line-height:1.7;padding:0}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:2rem 3rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--accent);letter-spacing:-.5px}
+.logo span{color:var(--text);font-style:italic}
+.doc-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+
+/* LAYOUT */
+.container{max-width:900px;margin:0 auto;padding:3rem 2rem 6rem}
+
+/* SOMMAIRE */
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem 2rem;margin-bottom:3rem}
+.toc-title{font-family:'DM Serif Display',serif;color:var(--accent);font-size:1rem;margin-bottom:1rem}
+.toc ol{padding-left:1.2rem;color:var(--muted);font-size:.78rem}
+.toc li{margin:.25rem 0}
+.toc a{color:var(--muted);text-decoration:none;transition:color .2s}
+.toc a:hover{color:var(--accent)}
+
+/* SECTIONS */
+section{margin-bottom:3.5rem}
+.section-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.section-num{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--border);line-height:1}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--accent)}
+
+h3{font-size:.88rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:1.5rem 0 .75rem}
+p{font-size:.83rem;color:var(--text);margin-bottom:.75rem}
+
+/* CARDS INFO */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem}
+.info-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.3rem}
+.info-value{font-size:.85rem;color:var(--text)}
+.info-value.accent{color:var(--accent)}
+.info-value.green{color:var(--accent2)}
+.info-value.purple{color:var(--pending)}
+
+/* TABLEAUX */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+th{background:rgba(255,255,255,.03);color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-size:.63rem;padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:.7rem 1rem;border-bottom:1px solid rgba(42,45,53,.5);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+td code{background:rgba(232,197,71,.08);color:var(--accent);border-radius:4px;padding:.1rem .35rem;font-size:.75rem}
+
+/* CODE */
+pre{background:#111317;border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;overflow-x:auto;margin-bottom:1.5rem;font-size:.75rem;line-height:1.6;color:#c9d1d9}
+code{font-family:'DM Mono',monospace}
+
+/* BADGES */
+.badge{display:inline-block;border-radius:5px;padding:.15rem .5rem;font-size:.65rem;letter-spacing:.04em;text-transform:uppercase;font-weight:500;margin:.1rem}
+.badge-ok{background:rgba(79,195,161,.12);color:var(--accent2);border:1px solid rgba(79,195,161,.25)}
+.badge-warn{background:rgba(232,197,71,.1);color:var(--accent);border:1px solid rgba(232,197,71,.22)}
+.badge-danger{background:rgba(232,92,71,.1);color:var(--danger);border:1px solid rgba(232,92,71,.22)}
+.badge-purple{background:rgba(167,139,250,.1);color:var(--pending);border:1px solid rgba(167,139,250,.22)}
+
+/* FEATURE LIST */
+.feature-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.feature-item{display:flex;align-items:flex-start;gap:.75rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;font-size:.8rem}
+.feature-icon{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+.feature-text strong{display:block;color:var(--text);margin-bottom:.15rem}
+.feature-text span{color:var(--muted);font-size:.73rem}
+
+/* PALETTE */
+.palette{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.5rem}
+.swatch{border-radius:8px;padding:.6rem .9rem;font-size:.7rem;font-weight:500;border:1px solid rgba(255,255,255,.08)}
+
+/* PHASES */
+.phase-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.phase-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem}
+.phase-card.purple{border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.04)}
+.phase-card.green{border-color:rgba(79,195,161,.3);background:rgba(79,195,161,.04)}
+.phase-num{font-family:'DM Serif Display',serif;font-size:1.5rem;margin-bottom:.3rem}
+.phase-card.purple .phase-num{color:var(--pending)}
+.phase-card.green .phase-num{color:var(--accent2)}
+.phase-label{font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.75rem}
+.phase-card ul{padding-left:1rem;font-size:.77rem;color:var(--text)}
+.phase-card li{margin:.25rem 0}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:1.5rem 3rem;text-align:center;font-size:.63rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+@media(max-width:600px){
+  header{padding:1.2rem 1rem}
+  .container{padding:1.5rem 1rem 5rem}
+  .phase-cards{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">fuel<span>log</span></div>
+  <div class="doc-label">Cahier des charges — Avril 2026</div>
+</header>
+
+<div class="container">
+
+  <!-- SOMMAIRE -->
+  <div class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol>
+      <li><a href="#s1">Présentation du projet</a></li>
+      <li><a href="#s2">Infrastructure & Stack technique</a></li>
+      <li><a href="#s3">Charte graphique</a></li>
+      <li><a href="#s4">Base de données</a></li>
+      <li><a href="#s5">Logique métier — Les 2 phases</a></li>
+      <li><a href="#s6">Fonctionnalités actuelles</a></li>
+      <li><a href="#s7">Onglet Stations</a></li>
+      <li><a href="#s8">API gouvernementale carburants</a></li>
+      <li><a href="#s9">Routes API back-end</a></li>
+      <li><a href="#s10">Déploiement & Accès serveur</a></li>
+    </ol>
+  </div>
+
+  <!-- 1 -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-title">Présentation du projet</div>
+    </div>
+    <p><strong>FuelLog</strong> est une application web progressive (PWA) de suivi de carburant personnel, hébergée sur un serveur Proxmox via un container LXC Debian. Elle est accessible depuis n'importe quel appareil (iPhone, ordinateur) via l'URL <code>fuellog.super-nono.cc</code>, sécurisée par Cloudflare Access (authentification par email).</p>
+    <p>L'application permet de suivre tous ses pleins d'essence, analyser ses dépenses, surveiller la précision de l'ordinateur de bord, et trouver les stations les moins chères à proximité.</p>
+    <div class="info-grid">
+      <div class="info-card"><div class="info-label">URL publique</div><div class="info-value accent">fuellog.super-nono.cc</div></div>
+      <div class="info-card"><div class="info-label">Auth</div><div class="info-value">Cloudflare Access (email)</div></div>
+      <div class="info-card"><div class="info-label">IP locale</div><div class="info-value">192.168.0.77 : 3000</div></div>
+      <div class="info-card"><div class="info-label">Process manager</div><div class="info-value green">PM2</div></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-title">Infrastructure & Stack technique</div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card"><div class="info-label">Serveur</div><div class="info-value">Proxmox VE 8.4 · i5 · 32 Go RAM</div></div>
+      <div class="info-card"><div class="info-label">Container</div><div class="info-value">LXC Debian 13 · 512 Mo RAM</div></div>
+      <div class="info-card"><div class="info-label">Tunnel</div><div class="info-value">Cloudflare Tunnel</div></div>
+      <div class="info-card"><div class="info-label">Éditeur</div><div class="info-value">VSCode Remote SSH</div></div>
+    </div>
+    <h3>Stack</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Couche</th><th>Technologie</th><th>Notes</th></tr>
+        <tr><td>Back-end</td><td><code>Node.js 20 + Express</code></td><td>Port 3000, géré par PM2</td></tr>
+        <tr><td>Base de données</td><td><code>SQLite / better-sqlite3</code></td><td>/opt/fuellog/fuellog.db</td></tr>
+        <tr><td>Front-end</td><td>HTML / CSS / JS vanilla</td><td>Pas de framework</td></tr>
+        <tr><td>Carte</td><td><code>Leaflet.js</code> + OpenStreetMap</td><td>Markers custom, resize drag</td></tr>
+        <tr><td>Graphiques</td><td><code>Chart.js 4.4.1</code></td><td>Dépenses, prix/L, km</td></tr>
+        <tr><td>Fonts</td><td>DM Serif Display + DM Mono</td><td>Google Fonts</td></tr>
+      </table>
+    </div>
+    <h3>Structure des fichiers</h3>
+<pre>/opt/fuellog/
+├── server.js              — point d'entrée Express, port 3000
+├── fuellog.db             — base SQLite
+├── stations_name.json     — 39 000 noms de stations (hass-prixcarburant)
+├── routes/
+│   ├── pleins.js          — CRUD pleins
+│   ├── stations.js        — proxy API gouvernementale + lookup noms
+│   └── favoris.js         — CRUD favoris + refresh-prix
+├── db/
+│   └── database.js        — connexion SQLite + migrations
+└── public/
+    ├── index.html
+    ├── css/style.css
+    └── js/
+        ├── api.js          — toutes les fonctions fetch
+        ├── app.js          — logique pleins / historique / modals
+        ├── charts.js       — graphiques
+        ├── precision.js    — onglet précision ODB
+        └── stations.js     — onglet stations</pre>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-title">Charte graphique</div>
+    </div>
+    <h3>Palette</h3>
+    <div class="palette">
+      <div class="swatch" style="background:#0e0f11;color:#6b6f7a">--bg #0e0f11</div>
+      <div class="swatch" style="background:#16181c;color:#6b6f7a">--surface #16181c</div>
+      <div class="swatch" style="background:#1c1f25;color:#6b6f7a">--card #1c1f25</div>
+      <div class="swatch" style="background:#2a2d35;color:#f0ede6">--border #2a2d35</div>
+      <div class="swatch" style="background:#e8c547;color:#0e0f11">--accent #e8c547</div>
+      <div class="swatch" style="background:#4fc3a1;color:#0e0f11">--accent2 #4fc3a1</div>
+      <div class="swatch" style="background:#e87c47;color:#0e0f11">--accent3 #e87c47</div>
+      <div class="swatch" style="background:#f0ede6;color:#0e0f11">--text #f0ede6</div>
+      <div class="swatch" style="background:#e85c47;color:#fff">--danger #e85c47</div>
+      <div class="swatch" style="background:#a78bfa;color:#0e0f11">--pending #a78bfa</div>
+    </div>
+    <h3>Typographie</h3>
+    <p>Titres / logo : <strong>DM Serif Display</strong> — Corps / UI : <strong>DM Mono</strong> (400, 500) — Jamais Inter, Roboto, Arial.</p>
+    <h3>Composants</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Élément</th><th>Style</th></tr>
+        <tr><td>Bouton primaire</td><td>Fond <code>--accent</code> jaune, texte noir, radius 8px</td></tr>
+        <tr><td>Bouton FAB</td><td>Fond <code>--pending</code> violet, radius 20px, 64×64px, fixe bas-droite</td></tr>
+        <tr><td>Cards</td><td>Fond <code>--card</code>, bordure <code>1px solid --border</code>, radius 12px</td></tr>
+        <tr><td>Tags carburant</td><td>SP95=jaune · SP98=vert · Diesel=orange · E85=rouge</td></tr>
+        <tr><td>Précision ODB</td><td>Vert ≥95% · Jaune ≥85% · Orange &lt;85%</td></tr>
+        <tr><td>Modals</td><td>Slide depuis le bas (style iOS), poignée drag en haut</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-title">Base de données</div>
+    </div>
+    <h3>Table <code>pleins</code></h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Colonne</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>id</code></td><td>INTEGER PK</td><td>Timestamp en millisecondes</td></tr>
+        <tr><td><code>date</code></td><td>TEXT</td><td>Format YYYY-MM-DD</td></tr>
+        <tr><td><code>type</code></td><td>TEXT</td><td>SP95, SP98, Diesel, E85</td></tr>
+        <tr><td><code>kmDepart</code></td><td>INTEGER</td><td>Repris automatiquement du plein précédent</td></tr>
+        <tr><td><code>kmTotal</code></td><td>INTEGER</td><td>NULL en Phase 1, renseigné en Phase 2</td></tr>
+        <tr><td><code>estimPlein</code></td><td>REAL</td><td>ODB annoncé après le plein (km)</td></tr>
+        <tr><td><code>estimRestante</code></td><td>REAL</td><td>ODB restant au plein suivant — NULL Phase 1</td></tr>
+        <tr><td><code>total</code></td><td>REAL</td><td>Prix total payé (€)</td></tr>
+        <tr><td><code>litres</code></td><td>REAL</td><td>Litres (optionnel)</td></tr>
+        <tr><td><code>prixL</code></td><td>REAL</td><td>Prix au litre (optionnel)</td></tr>
+        <tr><td><code>station</code></td><td>TEXT</td><td>Nom de la station</td></tr>
+      </table>
+    </div>
+    <h3>Table <code>favoris</code></h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Colonne</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>id</code></td><td>TEXT PK</td><td>ID API gouvernementale</td></tr>
+        <tr><td><code>nom</code></td><td>TEXT</td><td>Nom de la station (modifiable)</td></tr>
+        <tr><td><code>adresse</code></td><td>TEXT</td><td>Adresse complète</td></tr>
+        <tr><td><code>lat</code></td><td>REAL</td><td>Latitude GPS</td></tr>
+        <tr><td><code>lng</code></td><td>REAL</td><td>Longitude GPS</td></tr>
+        <tr><td><code>ville</code></td><td>TEXT</td><td>Ville</td></tr>
+        <tr><td><code>prix_json</code></td><td>TEXT</td><td>Prix stockés en JSON — mis à jour via /refresh-prix</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div class="section-title">Logique métier — Les 2 phases</div>
+    </div>
+    <div class="phase-cards">
+      <div class="phase-card purple">
+        <div class="phase-num">Phase 1</div>
+        <div class="phase-label">Au moment du plein</div>
+        <ul>
+          <li>Date + type carburant</li>
+          <li>Station (favoris → proches → manuel)</li>
+          <li>ODB annoncé (km restants affichés)</li>
+          <li>Prix total payé (€)</li>
+          <li>Litres + prix/L (optionnels)</li>
+          <li>kmDepart repris du plein précédent</li>
+        </ul>
+      </div>
+      <div class="phase-card green">
+        <div class="phase-num">Phase 2</div>
+        <div class="phase-label">Au plein suivant (avant de faire le plein)</div>
+        <ul>
+          <li>Kilométrage total atteint</li>
+          <li>ODB restant affiché par la voiture</li>
+          <li>→ Calcul automatique précision</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Formule de précision ODB</h3>
+<pre>kmParcourus  = kmTotal - kmDepart
+précision %  = (kmParcourus + estimRestante) / estimPlein × 100
+
+Exemple :
+  kmDepart=146716 · kmTotal=147394 → kmParcourus=678
+  estimPlein=866 · estimRestante=95
+  précision = (678 + 95) / 866 = 89.3%</pre>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <div class="section-title">Fonctionnalités actuelles</div>
+    </div>
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-icon">📋</div><div class="feature-text"><strong>Historique</strong><span>Liste des pleins du plus récent au plus ancien. Banner violet Phase 1 en haut si plein en attente.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">✏️</div><div class="feature-text"><strong>Modifier / Supprimer un plein</strong><span>Modal avec tous les champs modifiables. Suppression avec confirmation native.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">📊</div><div class="feature-text"><strong>Stats</strong><span>Total dépensé, litres, prix moyen/L, km totaux. Graphiques Chart.js : dépenses, prix/L, km par plein.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">🎯</div><div class="feature-text"><strong>Précision ODB</strong><span>Jauge circulaire, graphique historique, tableau détaillé avec badge couleur par plein.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">⛽</div><div class="feature-text"><strong>Stations proches</strong><span>Géoloc auto ou recherche par ville. Rayon 40 km, 100 stations max. Tri distance / moins cher.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">🗺️</div><div class="feature-text"><strong>Carte Leaflet</strong><span>Marqueurs colorés (vert=moins cher, jaune=favori). Popup avec prix + Waze + favori. Bouton "Voir" centré. Carte redimensionnable par drag.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">⭐</div><div class="feature-text"><strong>Stations Favoris</strong><span>Persistants en SQLite avec prix stockés (prix_json). Refresh auto à l'ouverture de l'onglet (1 seul appel API). Ajout par ID. Renommage avec confirmation.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">📱</div><div class="feature-text"><strong>PWA</strong><span>Ajout à l'écran d'accueil iPhone via Safari → Partager → Sur l'écran d'accueil.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <div class="section-header">
+      <div class="section-num">07</div>
+      <div class="section-title">Onglet Stations — Détail</div>
+    </div>
+    <h3>Noms des stations</h3>
+    <p>Fichier <code>stations_name.json</code> (798 Ko, ~39 000 entrées) issu du projet <a href="https://github.com/Aohzan/hass-prixcarburant" style="color:var(--accent)">hass-prixcarburant</a>. Chaque entrée : <code>{ "id": { "name": "Super U Aigues-Mortes", "brand": "Super U" } }</code>. Lookup dans <code>routes/stations.js</code> au moment du parsing.</p>
+    <h3>Coordonnées</h3>
+    <p>Utiliser <code>s.geom.lat</code> et <code>s.geom.lon</code> (déjà en degrés décimaux). Fallback : <code>latitude / 100000</code>.</p>
+    <h3>Prix</h3>
+    <p>Utiliser les champs plats <code>gazole_prix</code>, <code>e10_prix</code>, <code>sp95_prix</code>, <code>sp98_prix</code>, <code>e85_prix</code>. Fallback : parser le champ <code>prix</code> (JSON string) avec normalisation des accents.</p>
+    <h3>Refresh prix favoris</h3>
+    <p>Route <code>GET /api/favoris/refresh-prix</code> — 1 seul appel avec <code>WHERE id IN (id1, id2, ...)</code>. Stocke en <code>prix_json</code> dans SQLite. Déclenché automatiquement à l'ouverture de l'onglet Favoris.</p>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <div class="section-header">
+      <div class="section-num">08</div>
+      <div class="section-title">API gouvernementale carburants</div>
+    </div>
+    <p><strong>URL :</strong> <code>https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records</code></p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Paramètre</th><th>Valeur</th></tr>
+        <tr><td><code>limit</code></td><td>100</td></tr>
+        <tr><td><code>where</code></td><td>within_distance(geom, GEOM'POINT(lng lat)', 40km)</td></tr>
+      </table>
+    </div>
+    <h3>Champs utiles dans la réponse</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Champ API</th><th>Clé interne</th><th>Notes</th></tr>
+        <tr><td><code>geom.lat / geom.lon</code></td><td>lat / lng</td><td>Degrés décimaux directs</td></tr>
+        <tr><td><code>gazole_prix</code></td><td>Diesel</td><td>—</td></tr>
+        <tr><td><code>e10_prix / sp95_prix</code></td><td>SP95</td><td>e10 = SP95 sans plomb</td></tr>
+        <tr><td><code>sp98_prix</code></td><td>SP98</td><td>—</td></tr>
+        <tr><td><code>e85_prix</code></td><td>E85</td><td>—</td></tr>
+        <tr><td><code>gazole_maj</code> etc.</td><td>maj</td><td>Date mise à jour (ISO 8601)</td></tr>
+        <tr><td><code>enseignes</code></td><td>—</td><td>Tableau (souvent vide) — utiliser stations_name.json</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <div class="section-header">
+      <div class="section-num">09</div>
+      <div class="section-title">Routes API back-end</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Méthode</th><th>Route</th><th>Description</th></tr>
+        <tr><td><span class="badge badge-ok">GET</span></td><td><code>/api/pleins</code></td><td>Tous les pleins triés par date ASC</td></tr>
+        <tr><td><span class="badge badge-warn">POST</span></td><td><code>/api/pleins</code></td><td>Créer un plein (Phase 1)</td></tr>
+        <tr><td><span class="badge badge-purple">PATCH</span></td><td><code>/api/pleins/:id</code></td><td>Compléter Phase 2 (kmTotal + estimRestante)</td></tr>
+        <tr><td><span class="badge badge-warn">PUT</span></td><td><code>/api/pleins/:id</code></td><td>Modifier tous les champs</td></tr>
+        <tr><td><span class="badge badge-danger">DELETE</span></td><td><code>/api/pleins/:id</code></td><td>Supprimer un plein</td></tr>
+        <tr><td><span class="badge badge-danger">DELETE</span></td><td><code>/api/pleins</code></td><td>Tout supprimer</td></tr>
+        <tr><td><span class="badge badge-ok">GET</span></td><td><code>/api/stations?lat=&lng=</code></td><td>Stations proches (rayon 40km)</td></tr>
+        <tr><td><span class="badge badge-ok">GET</span></td><td><code>/api/stations/by-id/:id</code></td><td>Chercher une station par son ID</td></tr>
+        <tr><td><span class="badge badge-ok">GET</span></td><td><code>/api/favoris</code></td><td>Liste des favoris avec prix</td></tr>
+        <tr><td><span class="badge badge-ok">GET</span></td><td><code>/api/favoris/refresh-prix</code></td><td>Rafraîchit les prix de tous les favoris</td></tr>
+        <tr><td><span class="badge badge-warn">POST</span></td><td><code>/api/favoris</code></td><td>Ajouter un favori</td></tr>
+        <tr><td><span class="badge badge-purple">PATCH</span></td><td><code>/api/favoris/:id</code></td><td>Renommer un favori</td></tr>
+        <tr><td><span class="badge badge-danger">DELETE</span></td><td><code>/api/favoris/:id</code></td><td>Supprimer un favori</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <div class="section-title">Déploiement & Accès serveur</div>
+    </div>
+    <h3>Connexion SSH</h3>
+<pre>ssh root@192.168.0.77
+# ou VSCode Remote SSH → 192.168.0.77</pre>
+    <h3>Déployer une modification</h3>
+<pre># Depuis le PC Windows (PowerShell ou Git Bash)
+scp "C:\Users\nonoN\Desktop\fuellog\fuellog\routes\stations.js" root@192.168.0.77:/opt/fuellog/routes/stations.js
+
+# Sur le serveur
+pm2 restart fuellog
+pm2 logs fuellog --lines 20</pre>
+    <h3>Déploiement complet</h3>
+<pre>scp -r "C:\Users\nonoN\Desktop\fuellog\fuellog\public" root@192.168.0.77:/opt/fuellog/
+scp -r "C:\Users\nonoN\Desktop\fuellog\fuellog\routes" root@192.168.0.77:/opt/fuellog/
+pm2 restart fuellog</pre>
+    <h3>SQLite</h3>
+<pre>sqlite3 /opt/fuellog/fuellog.db
+.tables
+SELECT * FROM pleins ORDER BY date DESC LIMIT 5;
+SELECT id, nom, prix_json FROM favoris;
+.quit</pre>
+    <h3>Infrastructure sous-domaines (Nginx)</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>URL</th><th>Port local</th><th>Dossier</th></tr>
+        <tr><td><code>super-nono.cc</code></td><td>—</td><td>/opt/landing/</td></tr>
+        <tr><td><code>fuellog.super-nono.cc</code></td><td>3000</td><td>/opt/fuellog/</td></tr>
+        <tr><td><code>salaire.super-nono.cc</code></td><td>3001</td><td>/opt/salaire/ (à créer)</td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>fuellog · super-nono.cc · cahier des charges v2 — avril 2026</footer>
+
+</body>
+</html>
