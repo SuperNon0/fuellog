@@ -83,7 +83,7 @@ function renderHistorique(){
           <span class="tag tag-${p.type}">${labelType(p.type)}</span>
           <div class="histo-resume">
             <span class="histo-km">${km?km.toLocaleString('fr-FR')+' km':'—'}</span>
-            ${p.estimRestante!=null?`<span class="histo-odb">ODB ${p.estimRestante} km</span>`:''}
+            ${km!==null&&p.estimRestante!=null?`<span class="histo-odb">→ ${(km+p.estimRestante).toLocaleString('fr-FR')} km</span>`:''}
             ${pct!==null?`<span class="prec-badge ${precClass(pct)}">${pct}%</span>`:''}
           </div>
         </div>
