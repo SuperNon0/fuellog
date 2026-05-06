@@ -3,6 +3,7 @@ let openId=null,editId=null;
 
 // ---- UTILITAIRES ----
 function fd(d){const[y,m,j]=d.split('-');return`${j}/${m}/${y}`}
+function labelType(t){return t==='SP95'?'SP95/E10':t;}
 function kmParcourus(p){return(p.kmTotal!=null&&p.kmDepart!=null)?p.kmTotal-p.kmDepart:null}
 function precision(p){
   if(p.kmTotal==null||p.estimRestante==null||!p.estimPlein||!p.kmDepart)return null;
@@ -52,7 +53,7 @@ function renderHistorique(){
     banner.style.display='block';
     document.getElementById('phase1-date').textContent=fd(p.date);
     document.getElementById('phase1-type').className='tag tag-'+p.type;
-    document.getElementById('phase1-type').textContent=p.type;
+    document.getElementById('phase1-type').textContent=labelType(p.type);
     document.getElementById('phase1-km').textContent=p.kmDepart?p.kmDepart.toLocaleString('fr-FR')+' km':'—';
     document.getElementById('phase1-odb').textContent=p.estimPlein?p.estimPlein+' km':'—';
     document.getElementById('phase1-total').textContent=p.total?p.total.toFixed(2)+' €':'—';
@@ -75,7 +76,7 @@ function renderHistorique(){
       <div class="histo-main">
         <div class="histo-left">
           <div class="histo-date">${fd(p.date)}</div>
-          <span class="tag tag-${p.type}">${p.type}</span>
+          <span class="tag tag-${p.type}">${labelType(p.type)}</span>
           <div class="histo-resume">
             <span class="histo-km">${km?km.toLocaleString('fr-FR')+' km':'—'}</span>
             ${pct!==null?`<span class="prec-badge ${precClass(pct)}">${pct}%</span>`:''}
@@ -99,7 +100,7 @@ function renderHistorique(){
           <div><div class="detail-label">Total payé</div><div class="detail-val">${p.total?p.total.toFixed(2)+' €':'—'}</div></div>
           <div><div class="detail-label">Litres</div><div class="detail-val">${p.litres>0?p.litres.toFixed(2)+' L':'—'}</div></div>
           <div><div class="detail-label">Prix/L</div><div class="detail-val">${p.prixL>0?p.prixL.toFixed(3)+' €':'—'}</div></div>
-          <div><div class="detail-label">Type</div><div class="detail-val">${p.type}</div></div>
+          <div><div class="detail-label">Type</div><div class="detail-val">${labelType(p.type)}</div></div>
         </div>
         <div class="detail-actions">
           <button class="btn-edit-d" onclick="ouvrirEdit(${p.id})">✏️ Modifier</button>
