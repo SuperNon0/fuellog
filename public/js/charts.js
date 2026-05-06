@@ -1,4 +1,4 @@
-let cD=null,cP=null,cK=null,cPrec=null,cM=null;
+let cD=null,cP=null,cK=null,cPrec=null,cM=null,cL=null;
 
 function baseOptions(){
   const gc='#2a2d35',tc='#6b6f7a',tf={family:'DM Mono',size:10};
@@ -18,6 +18,15 @@ function renderChartPrix(data){
 function renderChartKm(complets){
   if(cK)cK.destroy();
   cK=new Chart(document.getElementById('cK'),{type:'bar',data:{labels:complets.map(p=>fd(p.date)),datasets:[{data:complets.map(p=>kmParcourus(p)),backgroundColor:'rgba(232,124,71,.7)',borderColor:'rgba(232,124,71,1)',borderWidth:1,borderRadius:4}]},options:{...baseOptions(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+' km'}}}}});
+}
+
+function renderChartConso(complets){
+  if(cL)cL.destroy();
+  const avecConso=complets.filter(p=>conso(p)!==null);
+  if(!avecConso.length){cL=null;return;}
+  const vals=avecConso.map(p=>parseFloat(conso(p).toFixed(1)));
+  const moy=parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1));
+  cL=new Chart(document.getElementById('cL'),{type:'line',data:{labels:avecConso.map(p=>fd(p.date)),datasets:[{data:vals,borderColor:'#4fc3a1',backgroundColor:'rgba(79,195,161,.08)',tension:.3,pointBackgroundColor:vals.map(v=>v>moy*1.15?'#e85c47':v<moy*0.85?'#4fc3a1':'#e8c547'),pointRadius:5,fill:true},{type:'line',data:Array(vals.length).fill(moy),borderColor:'rgba(232,197,71,.6)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:{...baseOptions(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex===0?c.parsed.y.toFixed(1)+' L/100km':'Moy. '+moy+' L/100km'}}}}});
 }
 
 function renderChartMensuel(data){
