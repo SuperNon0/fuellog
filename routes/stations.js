@@ -19,73 +19,18 @@ function mapNom(nom) {
   return NOM_MAP[normalized] || null;
 }
 
-function haversineM(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-async function fetchOSMStations(lat, lng, rayonKm) {
-  const query = `[out:json][timeout:25][maxsize:134217728];(node["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng});way["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng}););out center tags;`;
-  const url = `https://overpass.openstreetmap.fr/api/interpreter?data=${encodeURIComponent(query)}`;
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'FuelLog/1.0 (personal fuel tracker; contact: noe.fougeray30@gmail.com)' },
-    signal: AbortSignal.timeout(15000)
-  });
-  if (!res.ok) throw new Error('Overpass HTTP ' + res.status);
-  const data = await res.json();
-  return (data.elements || []).map(el => {
-    const osLat = el.type === 'node' ? el.lat : el.center?.lat;
-    const osLng = el.type === 'node' ? el.lon : el.center?.lon;
-    const tags = el.tags || {};
-    const nom = tags.brand || tags.name || tags.operator || null;
-    const parts = [];
-    if (tags['addr:housenumber'] && tags['addr:street']) parts.push(`${tags['addr:housenumber']} ${tags['addr:street']}`);
-    else if (tags['addr:street']) parts.push(tags['addr:street']);
-    if (tags['addr:postcode']) parts.push(tags['addr:postcode']);
-    if (tags['addr:city']) parts.push(tags['addr:city']);
-    const adresse = parts.length ? parts.join(', ') : null;
-    return { lat: osLat, lng: osLng, nom, adresse };
-  }).filter(s => s.lat && s.lng);
-}
-
-function enrichStation(s, osmStations) {
-  if (!osmStations.length) return s;
-  let nearest = null, minDist = Infinity;
-  osmStations.forEach(osm => {
-    const d = haversineM(s.lat, s.lng, osm.lat, osm.lng);
-    if (d < minDist) { minDist = d; nearest = osm; }
-  });
-  if (!nearest || minDist > 150) return s;
-  return {
-    ...s,
-    nom: nearest.nom || s.nom,
-    adresse: nearest.adresse || s.adresse,
-    lat: nearest.lat,
-    lng: nearest.lng
-  };
-}
-
 router.get('/', async (req, res) => {
   const { lat, lng, rayon = 40 } = req.query;
   if (!lat || !lng) return res.status(400).json({ error: 'lat et lng requis' });
 
   try {
-    const govUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100&where=within_distance(geom%2CGEOM'POINT(${lng}%20${lat})'%2C${rayon}km)`;
-
-    // Appels gouvernement + Overpass en parallèle
-    const [govResponse, osmStations] = await Promise.all([
-      fetch(govUrl, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(12000) }),
-      fetchOSMStations(parseFloat(lat), parseFloat(lng), parseFloat(rayon)).catch(e => {
-        console.error('Overpass (non-fatal):', e.message);
-        return [];
-      })
-    ]);
-
-    if (!govResponse.ok) throw new Error('HTTP ' + govResponse.status);
-    const data = await govResponse.json();
+    const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100&where=within_distance(geom%2CGEOM'POINT(${lng}%20${lat})'%2C${rayon}km)`;
+    const response = await fetch(url, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(12000)
+    });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const data = await response.json();
     if (!data.results) return res.json({ stations: [] });
 
     const stations = data.results.map(s => {
@@ -138,8 +83,18 @@ router.get('/', async (req, res) => {
                   `Station ${s.ville||''}`.trim();
       const adresse = [s.adresse, s.cp, s.ville].filter(Boolean).join(', ');
 
-      const base = { id: String(s.id), nom, adresse, ville: s.ville||'', lat: sLat, lng: sLng, dist, prix, maj, services: s.services||[] };
-      return enrichStation(base, osmStations);
+      return {
+        id: String(s.id),
+        nom,
+        adresse,
+        ville: s.ville || '',
+        lat: sLat,
+        lng: sLng,
+        dist,
+        prix,
+        maj,
+        services: s.services || []
+      };
     })
     .filter(s => s.lat && s.lng && s.dist <= rayon)
     .sort((a, b) => a.dist - b.dist);
@@ -171,14 +126,7 @@ router.get('/by-id/:id', async (req, res) => {
     addPrix('SP95', s.sp95_prix);
     addPrix('SP98', s.sp98_prix);
     addPrix('E85', s.e85_prix);
-
-    let base = { id: String(s.id), nom, adresse, ville: s.ville||'', lat: sLat, lng: sLng, prix, maj: 'N/A', services: [] };
-    try {
-      const osmStations = await fetchOSMStations(sLat, sLng, 0.2);
-      base = enrichStation(base, osmStations);
-    } catch(e) {}
-
-    res.json({ station: base });
+    res.json({ station: { id: String(s.id), nom, adresse, ville: s.ville||'', lat: sLat, lng: sLng, prix, maj: 'N/A', services: [] } });
   } catch(err) {
     res.status(500).json({ error: err.message });
   }
