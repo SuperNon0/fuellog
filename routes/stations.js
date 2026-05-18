@@ -29,10 +29,8 @@ function haversineM(lat1, lng1, lat2, lng2) {
 
 async function fetchOSMStations(lat, lng, rayonKm) {
   const query = `[out:json][timeout:15];(node["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng});way["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng}););out center tags;`;
-  const res = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    body: query,
-    headers: { 'Content-Type': 'text/plain' },
+  const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`, {
+    headers: { 'Accept': 'application/json' },
     signal: AbortSignal.timeout(15000)
   });
   if (!res.ok) throw new Error('Overpass HTTP ' + res.status);
