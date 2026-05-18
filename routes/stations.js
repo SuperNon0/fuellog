@@ -35,6 +35,7 @@ async function fetchOSMStations(lat, lng, rayonKm) {
   });
   if (!res.ok) throw new Error('Overpass HTTP ' + res.status);
   const data = await res.json();
+  console.log('[OSM] raw:', JSON.stringify(data).substring(0, 300));
   return (data.elements || []).map(el => {
     const osLat = el.type === 'node' ? el.lat : el.center?.lat;
     const osLng = el.type === 'node' ? el.lon : el.center?.lon;
