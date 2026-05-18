@@ -29,7 +29,7 @@ function haversineM(lat1, lng1, lat2, lng2) {
 
 async function fetchOSMStations(lat, lng, rayonKm) {
   const query = `[out:json][timeout:25][maxsize:134217728];(node["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng});way["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng}););out center tags;`;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const url = `https://overpass.openstreetmap.fr/api/interpreter?data=${encodeURIComponent(query)}`;
   const res = await fetch(url, {
     headers: { 'User-Agent': 'FuelLog/1.0 (personal fuel tracker; contact: noe.fougeray30@gmail.com)' },
     signal: AbortSignal.timeout(15000)
