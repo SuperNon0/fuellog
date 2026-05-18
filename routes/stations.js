@@ -30,15 +30,12 @@ function haversineM(lat1, lng1, lat2, lng2) {
 async function fetchOSMStations(lat, lng, rayonKm) {
   const query = `[out:json][timeout:25][maxsize:134217728];(node["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng});way["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng}););out center tags;`;
   const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-  console.log('[OSM] url:', url.substring(0, 200));
   const res = await fetch(url, {
     headers: { 'User-Agent': 'FuelLog/1.0 (personal fuel tracker; contact: noe.fougeray30@gmail.com)' },
     signal: AbortSignal.timeout(15000)
   });
-  console.log('[OSM] status:', res.status);
   if (!res.ok) throw new Error('Overpass HTTP ' + res.status);
   const data = await res.json();
-  console.log('[OSM] raw:', JSON.stringify(data).substring(0, 300));
   return (data.elements || []).map(el => {
     const osLat = el.type === 'node' ? el.lat : el.center?.lat;
     const osLng = el.type === 'node' ? el.lon : el.center?.lon;
@@ -61,7 +58,6 @@ function enrichStation(s, osmStations) {
     const d = haversineM(s.lat, s.lng, osm.lat, osm.lng);
     if (d < minDist) { minDist = d; nearest = osm; }
   });
-  console.log(`[OSM] ${s.nom} → nearest: ${nearest?.nom} (${Math.round(minDist)}m) adresse: ${nearest?.adresse}`);
   if (!nearest || minDist > 150) return s;
   return {
     ...s,
@@ -87,7 +83,6 @@ router.get('/', async (req, res) => {
         return [];
       })
     ]);
-    console.log(`[OSM] ${osmStations.length} stations trouvées via Overpass`);
 
     if (!govResponse.ok) throw new Error('HTTP ' + govResponse.status);
     const data = await govResponse.json();
