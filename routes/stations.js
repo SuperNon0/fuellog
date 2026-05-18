@@ -76,14 +76,15 @@ router.get('/', async (req, res) => {
     const govUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100&where=within_distance(geom%2CGEOM'POINT(${lng}%20${lat})'%2C${rayon}km)`;
 
     // Appels gouvernement + Overpass en parallèle
+    const osmRayon = Math.min(parseFloat(rayon), 10); // Overpass limité à 10km max
     const [govResponse, osmStations] = await Promise.all([
       fetch(govUrl, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(12000) }),
-      fetchOSMStations(parseFloat(lat), parseFloat(lng), parseFloat(rayon)).catch(e => {
+      fetchOSMStations(parseFloat(lat), parseFloat(lng), osmRayon).catch(e => {
         console.error('Overpass (non-fatal):', e.message);
         return [];
       })
     ]);
-    console.log(`[OSM] ${osmStations.length} stations trouvées via Overpass`);
+    console.log(`[OSM] ${osmStations.length} stations trouvées via Overpass (rayon ${osmRayon}km)`);
 
     if (!govResponse.ok) throw new Error('HTTP ' + govResponse.status);
     const data = await govResponse.json();
