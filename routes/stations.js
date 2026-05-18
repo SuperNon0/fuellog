@@ -57,6 +57,7 @@ function enrichStation(s, osmStations) {
     const d = haversineM(s.lat, s.lng, osm.lat, osm.lng);
     if (d < minDist) { minDist = d; nearest = osm; }
   });
+  console.log(`[OSM] ${s.nom} → nearest: ${nearest?.nom} (${Math.round(minDist)}m) adresse: ${nearest?.adresse}`);
   if (!nearest || minDist > 150) return s;
   return {
     ...s,
@@ -82,6 +83,7 @@ router.get('/', async (req, res) => {
         return [];
       })
     ]);
+    console.log(`[OSM] ${osmStations.length} stations trouvées via Overpass`);
 
     if (!govResponse.ok) throw new Error('HTTP ' + govResponse.status);
     const data = await govResponse.json();
