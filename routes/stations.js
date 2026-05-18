@@ -29,7 +29,7 @@ function haversineM(lat1, lng1, lat2, lng2) {
 
 async function fetchOSMStations(lat, lng, rayonKm) {
   const query = `[out:json][timeout:15];(node["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng});way["amenity"="fuel"](around:${rayonKm*1000},${lat},${lng}););out center tags;`;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const url = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
   console.log('[OSM] url:', url.substring(0, 200));
   const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
   console.log('[OSM] status:', res.status);
