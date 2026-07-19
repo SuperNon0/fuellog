@@ -222,6 +222,9 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 /* BOUTON VOIR */
 .s-btn-voir{background:rgba(167,139,250,.1);color:var(--pending);border:1px solid rgba(167,139,250,.25);border-radius:6px;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.04em;text-transform:uppercase;padding:.32rem .65rem;cursor:pointer}
 .s-btn-voir:hover{background:rgba(167,139,250,.2)}
+.s-btn-gps{background:rgba(232,124,71,.1);color:var(--accent3);border:1px solid rgba(232,124,71,.25);border-radius:6px;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.04em;text-transform:uppercase;padding:.32rem .65rem;cursor:pointer}
+.s-btn-gps:hover{background:rgba(232,124,71,.2)}
+.s-btn-gps:disabled{opacity:.5;cursor:wait}
 
 /* POIGNÉE RESIZE CARTE */
 .map-resize-handle{width:100%;height:18px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;color:var(--muted);font-size:12px;margin-top:-2px;margin-bottom:.6rem;border-radius:0 0 12px 12px;border:1px solid var(--border);border-top:none;background:var(--card);transition:color .2s,background .2s;user-select:none}

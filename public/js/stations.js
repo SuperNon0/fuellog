@@ -128,6 +128,7 @@ function renderStationsList(){
         <button class="s-btn-voir" onclick="flyToStation('${s.id}')">🗺️ Voir</button>
         <button class="s-btn-waze" onclick="openWazeStation(${s.lat},${s.lng},'${s.adresse.replace(/'/g,"\\'")}')">🧭 Waze</button>
         <button class="s-btn-copy" onclick="copyStationAdresse('${s.adresse.replace(/'/g,"\\'")}')">📋 Adresse</button>
+        <button class="s-btn-gps" id="gps-btn-${s.id}" onclick="fixGPS('${s.id}')">📍 GPS</button>
         <button class="s-btn-fav${isFav?' active':''}" onclick="toggleStationFav('${s.id}')">
           ${isFav?'★':'☆'}
         </button>
@@ -463,4 +464,36 @@ async function refreshAndRenderFavoris(){
     stationsFavoris=updated;
     renderFavorisTab();
   }catch(e){}
+}
+
+async function fixGPS(stationId){
+  const s=stationsData.find(s=>s.id===stationId);
+  if(!s)return;
+  const btn=document.getElementById('gps-btn-'+stationId);
+  if(btn){btn.disabled=true;btn.textContent='⏳';}
+  try{
+    // Essai 1 : nom + adresse complète
+    // Essai 2 : nom + ville seulement (fallback)
+    const queries=[
+      [s.nom,s.adresse,s.ville].filter(Boolean).join(', '),
+      [s.nom,s.ville].filter(Boolean).join(' ')
+    ];
+    let found=null;
+    for(const q of queries){
+      if(!q.trim())continue;
+      const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=fr`);
+      const data=await res.json();
+      if(data.length){found=data[0];break;}
+    }
+    if(!found){toast('GPS introuvable pour cette station.',true);return;}
+    s.lat=parseFloat(found.lat);
+    s.lng=parseFloat(found.lon);
+    // Mettre à jour aussi dans les favoris si présent
+    const fav=stationsFavoris.find(f=>f.id===stationId);
+    if(fav){fav.lat=s.lat;fav.lng=s.lng;}
+    toast('GPS corrigé ✓');
+    renderStationsList();
+  }catch(e){
+    toast('Erreur lors de la recherche GPS.',true);
+  }
 }
