@@ -17,5 +17,7 @@ app.use('/api/pleins', require('./routes/pleins'));
 app.use('/api/stations', require('./routes/stations'));
 app.use('/api/favoris', require('./routes/favoris'));
 app.use('/api/entretiens', require('./routes/entretiens'));
+app.use('/api/vehicules', require('./routes/vehicules'));
+app.use('/api/types', require('./routes/types'));
 
 app.listen(PORT, () => console.log('FuelLog running on port ' + PORT));

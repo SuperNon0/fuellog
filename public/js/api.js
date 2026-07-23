@@ -12,7 +12,7 @@ async function apiCall(method, url, body) {
 }
 
 // Pleins
-async function getPleins() { return apiCall('GET', API_PLEINS); }
+async function getPleins(vehiculeId) { return apiCall('GET', vehiculeId ? `${API_PLEINS}?vehicule=${vehiculeId}` : API_PLEINS); }
 async function addPlein(p) { return apiCall('POST', API_PLEINS, p); }
 async function updatePlein(id, p) { return apiCall('PUT', `${API_PLEINS}/${id}`, p); }
 async function completePhase2(id, kmTotal, estimRestante) { return apiCall('PATCH', `${API_PLEINS}/${id}`, { kmTotal, estimRestante }); }
@@ -32,7 +32,7 @@ async function getStationById(id) { return apiCall('GET', `${API_STATIONS}/by-id
 
 // Entretiens
 const API_ENTRETIENS = '/api/entretiens';
-async function getEntretiens() { return apiCall('GET', API_ENTRETIENS); }
+async function getEntretiens(vehiculeId) { return apiCall('GET', vehiculeId ? `${API_ENTRETIENS}?vehicule=${vehiculeId}` : API_ENTRETIENS); }
 async function addEntretien(e) { return apiCall('POST', API_ENTRETIENS, e); }
 async function updateEntretien(id, e) { return apiCall('PUT', `${API_ENTRETIENS}/${id}`, e); }
 async function deleteEntretien(id) { return apiCall('DELETE', `${API_ENTRETIENS}/${id}`); }
@@ -43,3 +43,16 @@ async function uploadEntretienFichiers(id, files) {
   const res = await fetch(`${API_ENTRETIENS}/${id}/fichiers`, { method: 'POST', body: fd });
   return res.json();
 }
+
+// Véhicules
+const API_VEHICULES = '/api/vehicules';
+async function getVehicules() { return apiCall('GET', API_VEHICULES); }
+async function addVehicule(v) { return apiCall('POST', API_VEHICULES, v); }
+async function updateVehicule(id, v) { return apiCall('PUT', `${API_VEHICULES}/${id}`, v); }
+async function deleteVehicule(id) { return apiCall('DELETE', `${API_VEHICULES}/${id}`); }
+
+// Types d'entretien
+const API_TYPES = '/api/types';
+async function getTypes() { return apiCall('GET', API_TYPES); }
+async function addType(nom) { return apiCall('POST', API_TYPES, { nom }); }
+async function deleteType(id) { return apiCall('DELETE', `${API_TYPES}/${id}`); }

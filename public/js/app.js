@@ -33,11 +33,12 @@ function showTab(id,btn){
   if(id==='precision')renderPrecision(data);
   if(id==='stations')initStations();
   if(id==='entretien')initEntretien();
+  if(id==='parametres')initParametres();
 }
 
 // ---- DONNÉES ----
 async function loadData(){
-  data=await getPleins();
+  data=await getPleins(currentVehicleId);
   refreshAll();
 }
 
@@ -214,7 +215,7 @@ async function ajouterPhase1(){
     kmDepart=parseInt(document.getElementById('f-km-depart').value);
     if(isNaN(kmDepart)){toast('Renseigne le kilométrage de départ.',true);return;}
   }
-  await addPlein({date,type,kmDepart,kmTotal:null,estimPlein:estim,estimRestante:null,total,litres,prixL,station});
+  await addPlein({date,type,kmDepart,kmTotal:null,estimPlein:estim,estimRestante:null,total,litres,prixL,station,vehicule_id:currentVehicleId});
   await loadData();
   clearForm();
   document.getElementById('modal-saisie').classList.remove('open');
@@ -343,5 +344,12 @@ function clearForm(){
 }
 
 // ---- INIT ----
-document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-loadData();
+async function initApp(){
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  await loadVehicules();
+  await loadTypes();
+  try{ await loadFavoris(); }catch(e){}
+  await loadData();
+  updateStationDropdown();
+}
+initApp();

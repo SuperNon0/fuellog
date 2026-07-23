@@ -47,9 +47,43 @@ db.exec(`
     mimetype TEXT,
     FOREIGN KEY(entretien_id) REFERENCES entretiens(id) ON DELETE CASCADE
   );
+  CREATE TABLE IF NOT EXISTS vehicules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom TEXT NOT NULL,
+    marque TEXT DEFAULT '',
+    modele TEXT DEFAULT '',
+    immatriculation TEXT DEFAULT '',
+    annee INTEGER,
+    created_at TEXT
+  );
+  CREATE TABLE IF NOT EXISTS types_entretien (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom TEXT NOT NULL UNIQUE
+  );
 `);
 
 // Migration : ajouter prix_json aux favoris si absent
 try { db.exec('ALTER TABLE favoris ADD COLUMN prix_json TEXT DEFAULT "{}"'); } catch(e) {}
+
+// Migration multi-véhicule : rattacher chaque plein / entretien à un véhicule
+try { db.exec('ALTER TABLE pleins ADD COLUMN vehicule_id INTEGER'); } catch(e) {}
+try { db.exec('ALTER TABLE entretiens ADD COLUMN vehicule_id INTEGER'); } catch(e) {}
+
+// Créer un véhicule par défaut si aucun, et y rattacher les données existantes
+const vcount = db.prepare('SELECT COUNT(*) AS n FROM vehicules').get();
+if (vcount.n === 0) {
+  const info = db.prepare('INSERT INTO vehicules (nom,marque,modele,immatriculation,annee,created_at) VALUES (?,?,?,?,?,?)')
+    .run('Ma voiture', '', '', '', null, new Date().toISOString());
+  const vid = info.lastInsertRowid;
+  db.prepare('UPDATE pleins SET vehicule_id=? WHERE vehicule_id IS NULL').run(vid);
+  db.prepare('UPDATE entretiens SET vehicule_id=? WHERE vehicule_id IS NULL').run(vid);
+}
+
+// Types d'entretien par défaut si la table est vide
+const tcount = db.prepare('SELECT COUNT(*) AS n FROM types_entretien').get();
+if (tcount.n === 0) {
+  const ins = db.prepare('INSERT OR IGNORE INTO types_entretien (nom) VALUES (?)');
+  ['Entretien', "Changement d'huile", 'Pneus', 'Freins', 'Révision', 'Contrôle technique'].forEach(t => ins.run(t));
+}
 
 module.exports = db;

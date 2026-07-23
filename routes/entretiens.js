@@ -32,7 +32,9 @@ function withFichiers(e) {
 
 // ---- CRUD entretiens ----
 router.get('/', (req, res) => {
-  const list = db.prepare('SELECT * FROM entretiens ORDER BY date DESC, id DESC').all();
+  const list = req.query.vehicule
+    ? db.prepare('SELECT * FROM entretiens WHERE vehicule_id=? ORDER BY date DESC, id DESC').all(req.query.vehicule)
+    : db.prepare('SELECT * FROM entretiens ORDER BY date DESC, id DESC').all();
   res.json(list.map(withFichiers));
 });
 
@@ -40,8 +42,8 @@ router.post('/', (req, res) => {
   const e = req.body;
   if (!e.date) return res.status(400).json({ error: 'date requise' });
   const id = Date.now();
-  db.prepare(`INSERT INTO entretiens (id,date,km,categorie,commentaire,cout,created_at) VALUES (?,?,?,?,?,?,?)`)
-    .run(id, e.date, e.km ?? null, e.categorie ?? '', e.commentaire ?? '', e.cout ?? 0, new Date().toISOString());
+  db.prepare(`INSERT INTO entretiens (id,date,km,categorie,commentaire,cout,created_at,vehicule_id) VALUES (?,?,?,?,?,?,?,?)`)
+    .run(id, e.date, e.km ?? null, e.categorie ?? '', e.commentaire ?? '', e.cout ?? 0, new Date().toISOString(), e.vehicule_id ?? null);
   res.json({ id });
 });
 
@@ -79,7 +81,13 @@ router.delete('/fichiers/:fid', (req, res) => {
 // ---- Export PDF du carnet complet ----
 router.get('/export/pdf', async (req, res) => {
   try {
-    const entretiens = db.prepare('SELECT * FROM entretiens ORDER BY date ASC, id ASC').all().map(withFichiers);
+    const vehicule = req.query.vehicule
+      ? db.prepare('SELECT * FROM vehicules WHERE id=?').get(req.query.vehicule)
+      : null;
+    const entretiens = (req.query.vehicule
+      ? db.prepare('SELECT * FROM entretiens WHERE vehicule_id=? ORDER BY date ASC, id ASC').all(req.query.vehicule)
+      : db.prepare('SELECT * FROM entretiens ORDER BY date ASC, id ASC').all()
+    ).map(withFichiers);
     const pdf = await PDFDocument.create();
     const font = await pdf.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -96,6 +104,13 @@ router.get('/export/pdf', async (req, res) => {
 
     page.drawText("Carnet d'entretien", { x: margin, y: y - 10, size: 26, font: fontBold, color: dark });
     y -= 44;
+    if (vehicule) {
+      const clean0 = s => String(s || '').replace(/[^\x00-\xFF]/g, '?');
+      const ligne = [vehicule.nom, [vehicule.marque, vehicule.modele].filter(Boolean).join(' '), vehicule.immatriculation, vehicule.annee]
+        .filter(Boolean).map(clean0).join(' · ');
+      page.drawText(ligne, { x: margin, y, size: 12, font: fontBold, color: dark });
+      y -= 18;
+    }
     const dateGen = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
     page.drawText('Généré le ' + dateGen + ' · FuelLog', { x: margin, y, size: 10, font, color: grey });
     y -= 14;

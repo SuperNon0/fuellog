@@ -1,10 +1,9 @@
 let entretiens = [];
 let editEntretienId = null;
 
-const CATEGORIES = ['Vidange', 'Pneus', 'Freins', 'Révision', 'Filtres', 'Batterie', 'Courroie', 'Climatisation', 'Carrosserie', 'Contrôle technique', 'Autre'];
-
 async function initEntretien() {
-  try { entretiens = await getEntretiens(); } catch (e) { entretiens = []; }
+  try { if (!entretienTypes.length) await loadTypes(); } catch (e) {}
+  try { entretiens = await getEntretiens(currentVehicleId); } catch (e) { entretiens = []; }
   renderEntretiens();
 }
 
@@ -69,10 +68,12 @@ function openEntretienModal() {
 
 function fillCategories(selected) {
   const sel = document.getElementById('ent-categorie');
-  sel.innerHTML = CATEGORIES.map(c => `<option${c === selected ? ' selected' : ''}>${c}</option>`).join('');
-  if (selected && !CATEGORIES.includes(selected)) {
+  const noms = entretienTypes.map(t => t.nom);
+  sel.innerHTML = noms.map(c => `<option${c === selected ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('');
+  if (selected && !noms.includes(selected)) {
     sel.innerHTML += `<option selected>${escapeHtml(selected)}</option>`;
   }
+  if (!noms.length && !selected) sel.innerHTML = '<option>Entretien</option>';
 }
 
 function ouvrirEditEntretien(id) {
@@ -111,7 +112,7 @@ async function validerEntretien() {
     if (id) {
       await updateEntretien(id, { date, km, categorie, commentaire, cout });
     } else {
-      const r = await addEntretien({ date, km, categorie, commentaire, cout });
+      const r = await addEntretien({ date, km, categorie, commentaire, cout, vehicule_id: currentVehicleId });
       id = r.id;
     }
     if (files && files.length) {
@@ -146,5 +147,6 @@ async function supprimerFichier(fid) {
 function exporterCarnetPDF() {
   if (!entretiens.length) { toast('Aucun entretien à exporter.', true); return; }
   toast('Génération du PDF…');
-  window.open('/api/entretiens/export/pdf', '_blank');
+  const q = currentVehicleId ? '?vehicule=' + currentVehicleId : '';
+  window.open('/api/entretiens/export/pdf' + q, '_blank');
 }

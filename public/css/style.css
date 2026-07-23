@@ -284,3 +284,31 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 .field textarea:focus{outline:none;border-color:var(--accent)}
 .field input[type="file"]{font-size:.72rem;color:var(--muted);padding:.5rem 0}
 .ent-files-hint{font-size:.58rem;color:var(--muted);font-style:italic;margin-top:.2rem}
+
+/* SÉLECTEUR VÉHICULE (header) */
+.header-left{display:flex;flex-direction:column;gap:.25rem;min-width:0}
+.vehicule-select{background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:.65rem;padding:.2rem .5rem;max-width:150px;-webkit-appearance:none;appearance:none;cursor:pointer}
+.vehicule-select:focus{outline:none;border-color:var(--accent)}
+
+/* PARAMÈTRES */
+.param-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem}
+.param-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.param-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--accent)}
+.param-desc{font-size:.65rem;color:var(--muted);margin:-.3rem 0 .7rem;line-height:1.4}
+.param-add-btn{background:rgba(232,197,71,.1);color:var(--accent);border:1px solid rgba(232,197,71,.25);border-radius:7px;font-family:'DM Mono',monospace;font-size:.65rem;padding:.4rem .7rem;cursor:pointer}
+.param-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.param-item:last-child{border-bottom:none}
+.param-item-nom{font-size:.82rem;font-weight:500}
+.param-actif{font-size:.55rem;background:rgba(79,195,161,.15);color:var(--accent2);border-radius:4px;padding:.1rem .35rem;text-transform:uppercase;letter-spacing:.05em;vertical-align:middle}
+.param-item-sub{font-size:.65rem;color:var(--muted);margin-top:.15rem}
+.param-item-actions{display:flex;gap:.3rem;flex-shrink:0}
+.param-item-actions button{background:none;border:1px solid var(--border);border-radius:6px;font-size:.8rem;padding:.3rem .5rem;cursor:pointer}
+.param-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem}
+.param-chip{display:flex;align-items:center;gap:.35rem;background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.2);color:var(--accent);border-radius:6px;padding:.3rem .3rem .3rem .6rem;font-size:.7rem}
+.param-chip button{background:none;border:none;color:var(--muted);font-size:.9rem;line-height:1;cursor:pointer;padding:0 .1rem}
+.param-chip button:hover{color:var(--danger)}
+.param-empty{font-size:.68rem;color:var(--muted);font-style:italic}
+.param-add-row{display:flex;gap:.5rem}
+.param-add-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:.55rem .8rem}
+.param-add-row input:focus{outline:none;border-color:var(--accent)}
+.param-add-row button{background:rgba(232,197,71,.12);color:var(--accent);border:1px solid rgba(232,197,71,.25);border-radius:8px;font-size:1rem;padding:0 .9rem;cursor:pointer}

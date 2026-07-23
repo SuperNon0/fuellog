@@ -3,14 +3,17 @@ const router = express.Router();
 const db = require('../db/database');
 
 router.get('/', (req, res) => {
+  if (req.query.vehicule) {
+    return res.json(db.prepare('SELECT * FROM pleins WHERE vehicule_id=? ORDER BY date ASC, id ASC').all(req.query.vehicule));
+  }
   res.json(db.prepare('SELECT * FROM pleins ORDER BY date ASC, id ASC').all());
 });
 
 router.post('/', (req, res) => {
   const p = req.body;
   const id = Date.now();
-  db.prepare(`INSERT INTO pleins (id,date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(id, p.date, p.type, p.kmDepart, p.kmTotal??null, p.estimPlein??null, p.estimRestante??null, p.total??0, p.litres??0, p.prixL??0, p.station??'');
+  db.prepare(`INSERT INTO pleins (id,date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station,vehicule_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(id, p.date, p.type, p.kmDepart, p.kmTotal??null, p.estimPlein??null, p.estimRestante??null, p.total??0, p.litres??0, p.prixL??0, p.station??'', p.vehicule_id??null);
   res.json({ id });
 });
 
@@ -33,7 +36,11 @@ router.delete('/:id', (req, res) => {
 });
 
 router.delete('/', (req, res) => {
-  db.prepare('DELETE FROM pleins').run();
+  if (req.query.vehicule) {
+    db.prepare('DELETE FROM pleins WHERE vehicule_id=?').run(req.query.vehicule);
+  } else {
+    db.prepare('DELETE FROM pleins').run();
+  }
   res.json({ ok: true });
 });
 
