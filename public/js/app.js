@@ -314,11 +314,24 @@ function updateMiniStats(){
 }
 
 // ---- STATS ----
+function populateYearFilter(){
+  const sel=document.getElementById('stats-year');
+  if(!sel)return;
+  const annees=[...new Set(data.map(p=>p.date.slice(0,4)))].sort().reverse();
+  const prev=sel.value;
+  sel.innerHTML='<option value="all">Toutes les années</option>'+annees.map(a=>`<option value="${a}">${a}</option>`).join('');
+  if(prev&&[...sel.options].some(o=>o.value===prev))sel.value=prev;
+}
+
 function renderStats(){
-  const complets=data.filter(p=>p.kmTotal!==null);
-  const dep=data.reduce((s,p)=>s+p.total,0);
-  const avecL=data.filter(p=>p.litres>0);const totL=avecL.reduce((s,p)=>s+p.litres,0);
-  const avecP=data.filter(p=>p.prixL>0);const pMoy=avecP.length?avecP.reduce((s,p)=>s+p.prixL,0)/avecP.length:0;
+  populateYearFilter();
+  const sel=document.getElementById('stats-year');
+  const annee=sel?sel.value:'all';
+  const fdata=(annee&&annee!=='all')?data.filter(p=>p.date.slice(0,4)===annee):data;
+  const complets=fdata.filter(p=>p.kmTotal!==null);
+  const dep=fdata.reduce((s,p)=>s+p.total,0);
+  const avecL=fdata.filter(p=>p.litres>0);const totL=avecL.reduce((s,p)=>s+p.litres,0);
+  const avecP=fdata.filter(p=>p.prixL>0);const pMoy=avecP.length?avecP.reduce((s,p)=>s+p.prixL,0)/avecP.length:0;
   const kmTot=complets.reduce((s,p)=>s+kmParcourus(p),0);
   document.getElementById('st-total').textContent=dep.toFixed(2);
   document.getElementById('st-litres').textContent=totL>0?totL.toFixed(1):'—';
@@ -328,10 +341,10 @@ function renderStats(){
   const coutVals=complets.filter(p=>coutKm(p)!==null).map(p=>coutKm(p));
   document.getElementById('st-conso').textContent=consoVals.length?(consoVals.reduce((a,b)=>a+b,0)/consoVals.length).toFixed(1):'—';
   document.getElementById('st-cout').textContent=coutVals.length?(coutVals.reduce((a,b)=>a+b,0)/coutVals.length).toFixed(2):'—';
-  document.getElementById('st-jours').textContent=joursMoyen(data)||'—';
-  const proj=coutAnnuelProjecte(data);
+  document.getElementById('st-jours').textContent=joursMoyen(fdata)||'—';
+  const proj=coutAnnuelProjecte(fdata);
   document.getElementById('st-proj').textContent=proj?proj.toLocaleString('fr-FR'):'—';
-  renderChartDepense(data);renderChartPrix(data);renderChartKm(complets);renderChartConso(complets);renderChartMensuel(data);
+  renderChartDepense(fdata);renderChartPrix(fdata);renderChartKm(complets);renderChartConso(complets);renderChartMensuel(fdata);
 }
 
 // ---- FORM ----

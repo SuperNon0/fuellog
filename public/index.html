@@ -83,6 +83,10 @@
 
   <!-- STATS -->
   <div id="tab-stats" class="tab">
+    <div class="stats-filter">
+      <label for="stats-year">Période</label>
+      <select id="stats-year" onchange="renderStats()"></select>
+    </div>
     <div class="stats-grid">
       <div class="stat-card y"><div class="stat-label">Total dépensé</div><div class="stat-value y" id="st-total">—</div><div class="stat-unit">€</div></div>
       <div class="stat-card g"><div class="stat-label">Total litres</div><div class="stat-value g" id="st-litres">—</div><div class="stat-unit">L</div></div>
@@ -209,6 +213,33 @@
       <div class="param-add-row">
         <input type="text" id="param-type-input" placeholder="Ex : Vidange, Distribution…" onkeydown="if(event.key==='Enter')ajouterType()">
         <button onclick="ajouterType()">＋</button>
+      </div>
+    </div>
+
+    <div class="param-section">
+      <h2 class="param-title">📊 Exporter mes données</h2>
+      <p class="param-desc">Exporte tes pleins et entretiens en tableur (CSV, s'ouvre dans Excel / Sheets / Numbers).</p>
+      <div class="param-btn-col">
+        <button class="param-data-btn" onclick="exporterCSV('pleins')">📈 Pleins en CSV</button>
+        <button class="param-data-btn" onclick="exporterCSV('entretiens')">🔧 Entretiens en CSV</button>
+      </div>
+    </div>
+
+    <div class="param-section">
+      <h2 class="param-title">💾 Sauvegarde &amp; restauration</h2>
+      <p class="param-desc">La sauvegarde contient <strong>tout</strong> (véhicules, pleins, entretiens, favoris, factures) dans un seul fichier, réimportable sur une nouvelle installation.</p>
+      <div class="param-btn-col">
+        <button class="param-data-btn" onclick="exporterBackup()">⬇️ Télécharger la sauvegarde</button>
+        <button class="param-data-btn param-data-warn" onclick="declencherImport()">⬆️ Restaurer une sauvegarde</button>
+        <input type="file" id="import-file-input" accept="application/json,.json" style="display:none" onchange="importerBackup(this)">
+      </div>
+    </div>
+
+    <div class="param-section">
+      <h2 class="param-title">🔄 Mise à jour</h2>
+      <div id="param-version" class="param-version">Chargement…</div>
+      <div class="param-btn-col">
+        <button class="param-data-btn" id="btn-update" onclick="mettreAJour()">⬆️ Mettre à jour l'application</button>
       </div>
     </div>
   </div>

@@ -56,3 +56,11 @@ const API_TYPES = '/api/types';
 async function getTypes() { return apiCall('GET', API_TYPES); }
 async function addType(nom) { return apiCall('POST', API_TYPES, { nom }); }
 async function deleteType(id) { return apiCall('DELETE', `${API_TYPES}/${id}`); }
+
+// Données (export / backup / import)
+async function importBackup(backupObj) { return apiCall('POST', '/api/donnees/import', backupObj); }
+
+// Système
+async function getVersion() { return apiCall('GET', '/api/systeme/version'); }
+async function checkUpdate() { return apiCall('GET', '/api/systeme/check'); }
+async function launchUpdate() { return apiCall('POST', '/api/systeme/update'); }

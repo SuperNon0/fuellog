@@ -312,3 +312,14 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 .param-add-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:.55rem .8rem}
 .param-add-row input:focus{outline:none;border-color:var(--accent)}
 .param-add-row button{background:rgba(232,197,71,.12);color:var(--accent);border:1px solid rgba(232,197,71,.25);border-radius:8px;font-size:1rem;padding:0 .9rem;cursor:pointer}
+.param-btn-col{display:flex;flex-direction:column;gap:.5rem}
+.param-data-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.03em;padding:.7rem .9rem;border-radius:8px;cursor:pointer;text-align:left}
+.param-data-btn:active{border-color:var(--accent)}
+.param-data-warn{color:var(--accent3);border-color:rgba(232,124,71,.3)}
+.param-version{font-size:.66rem;color:var(--muted);margin-bottom:.7rem;font-family:'DM Mono',monospace}
+
+/* FILTRE STATS */
+.stats-filter{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
+.stats-filter label{font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.stats-filter select{background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;padding:.45rem .8rem;cursor:pointer;-webkit-appearance:none;appearance:none;flex:1;max-width:200px}
+.stats-filter select:focus{outline:none;border-color:var(--accent)}

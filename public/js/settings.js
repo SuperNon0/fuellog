@@ -38,6 +38,7 @@ async function initParametres() {
   await loadVehicules();
   await loadTypes();
   renderParametres();
+  renderVersion();
 }
 
 function renderParametres() {
@@ -125,6 +126,77 @@ async function supprimerVehicule(id) {
   renderParametres();
   await loadData();
   toast('Véhicule supprimé');
+}
+
+// ---- EXPORT / SAUVEGARDE / IMPORT ----
+function exporterCSV(type) {
+  const q = currentVehicleId ? '?vehicule=' + currentVehicleId : '';
+  window.open(`/api/donnees/csv/${type}${q}`, '_blank');
+  toast('Export CSV…');
+}
+
+function exporterBackup() {
+  window.open('/api/donnees/backup', '_blank');
+  toast('Téléchargement de la sauvegarde…');
+}
+
+function declencherImport() {
+  if (!confirm('⚠️ Restaurer une sauvegarde REMPLACE toutes les données actuelles (véhicules, pleins, entretiens, favoris).\n\nContinuer ?')) return;
+  document.getElementById('import-file-input').click();
+}
+
+async function importerBackup(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  toast('Lecture du fichier…');
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    const r = await importBackup(obj);
+    if (r.error) { toast(r.error, true); return; }
+    // Repartir proprement sur le premier véhicule restauré
+    currentVehicleId = null;
+    localStorage.removeItem('fuellog_vehicule');
+    await loadVehicules();
+    await loadTypes();
+    await loadData();
+    renderParametres();
+    toast(`Restauré : ${r.vehicules} véhicule(s), ${r.pleins} plein(s) ✓`);
+  } catch (e) {
+    toast('Fichier invalide ou illisible.', true);
+  }
+}
+
+// ---- MISE À JOUR ----
+async function renderVersion() {
+  const el = document.getElementById('param-version');
+  const btn = document.getElementById('btn-update');
+  if (!el) return;
+  try {
+    const v = await getVersion();
+    let txt = v.commit ? `Version ${v.commit}` : 'Version inconnue';
+    if (v.branch) txt += ` · ${v.branch}`;
+    if (v.date) txt += ` · ${v.date}`;
+    el.textContent = txt;
+    if (btn) btn.style.display = v.updateEnabled ? '' : 'none';
+    if (!v.updateEnabled && el) el.textContent += ' · (mise à jour auto désactivée)';
+  } catch (e) { el.textContent = 'Version indisponible'; }
+}
+
+async function mettreAJour() {
+  if (!confirm("Lancer la mise à jour ? L'application va se recharger dans ~30 secondes.")) return;
+  const btn = document.getElementById('btn-update');
+  btn.disabled = true; btn.textContent = 'Mise à jour en cours…';
+  try {
+    const r = await launchUpdate();
+    if (r.error) { toast(r.error, true); btn.disabled = false; btn.textContent = "⬆️ Mettre à jour l'application"; return; }
+    toast(r.message || 'Mise à jour lancée…');
+    setTimeout(() => location.reload(), 30000);
+  } catch (e) {
+    toast('Erreur au lancement de la mise à jour.', true);
+    btn.disabled = false; btn.textContent = "⬆️ Mettre à jour l'application";
+  }
 }
 
 // ---- CRUD TYPES ----
