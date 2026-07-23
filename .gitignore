@@ -5,6 +5,9 @@ node_modules/
 *.db-shm
 *.db-wal
 
+# Pièces jointes des entretiens (fichiers uploadés)
+uploads/
+
 # Archives
 *.rar
 *.zip

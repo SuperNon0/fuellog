@@ -29,3 +29,17 @@ async function deleteFavori(id) { return apiCall('DELETE', `${API_FAVORIS}/${id}
 // Stations
 async function getStations(lat, lng) { return apiCall('GET', `${API_STATIONS}?lat=${lat}&lng=${lng}`); }
 async function getStationById(id) { return apiCall('GET', `${API_STATIONS}/by-id/${id}`); }
+
+// Entretiens
+const API_ENTRETIENS = '/api/entretiens';
+async function getEntretiens() { return apiCall('GET', API_ENTRETIENS); }
+async function addEntretien(e) { return apiCall('POST', API_ENTRETIENS, e); }
+async function updateEntretien(id, e) { return apiCall('PUT', `${API_ENTRETIENS}/${id}`, e); }
+async function deleteEntretien(id) { return apiCall('DELETE', `${API_ENTRETIENS}/${id}`); }
+async function deleteEntretienFichier(fid) { return apiCall('DELETE', `${API_ENTRETIENS}/fichiers/${fid}`); }
+async function uploadEntretienFichiers(id, files) {
+  const fd = new FormData();
+  for (const f of files) fd.append('fichiers', f);
+  const res = await fetch(`${API_ENTRETIENS}/${id}/fichiers`, { method: 'POST', body: fd });
+  return res.json();
+}

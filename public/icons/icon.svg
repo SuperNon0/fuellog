@@ -1,0 +1,12 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0e0f11"/>
+  <!-- corps réservoir -->
+  <rect x="128" y="120" width="150" height="272" rx="20" fill="none" stroke="#e8c547" stroke-width="26"/>
+  <rect x="128" y="120" width="150" height="86" rx="20" fill="#e8c547"/>
+  <!-- pistolet / tuyau -->
+  <path d="M278 180 h44 a26 26 0 0 1 26 26 v150 a24 24 0 0 0 48 0 V236 l-40 -44"
+        fill="none" stroke="#e8c547" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- goutte -->
+  <path d="M384 250 c18 24 30 40 30 58 a30 30 0 0 1 -60 0 c0 -18 12 -34 30 -58 z" fill="#4fc3a1"/>
+</svg>

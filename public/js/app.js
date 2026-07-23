@@ -32,6 +32,7 @@ function showTab(id,btn){
   if(id==='stats')renderStats();
   if(id==='precision')renderPrecision(data);
   if(id==='stations')initStations();
+  if(id==='entretien')initEntretien();
 }
 
 // ---- DONNÉES ----
