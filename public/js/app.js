@@ -30,6 +30,7 @@ function showTab(id,btn){
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   if(id==='stats')renderStats();
+  if(id==='estimation')initEstimation();
   if(id==='precision')renderPrecision(data);
   if(id==='stations')initStations();
   if(id==='entretien')initEntretien();

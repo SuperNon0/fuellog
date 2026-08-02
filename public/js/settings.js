@@ -24,6 +24,8 @@ async function switchVehicle(id) {
   currentVehicleId = parseInt(id);
   localStorage.setItem('fuellog_vehicule', currentVehicleId);
   await loadData();
+  const estimTab = document.getElementById('tab-estimation');
+  if (estimTab && estimTab.classList.contains('active')) initEstimation();
   toast('Véhicule : ' + (vehicules.find(v => v.id === currentVehicleId)?.nom || ''));
 }
 

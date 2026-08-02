@@ -38,6 +38,7 @@
 <nav>
   <button class="active" onclick="showTab('historique',this)" id="nav-histo">📋 Historique</button>
   <button onclick="showTab('stats',this)">📊 Stats</button>
+  <button onclick="showTab('estimation',this)">🧮 Estimation</button>
   <button onclick="showTab('precision',this)">🎯 Précision ODB</button>
   <button onclick="showTab('stations',this)">⛽ Stations</button>
   <button onclick="showTab('entretien',this)">🔧 Entretien</button>
@@ -194,6 +195,26 @@
     </div>
     <button class="ent-add-btn" onclick="openEntretienModal()">＋ Ajouter un entretien</button>
     <div id="entretien-list"></div>
+  </div>
+
+  <!-- ONGLET ESTIMATION -->
+  <div id="tab-estimation" class="tab">
+    <h2 class="estim-title">🧮 Estimation de trajet</h2>
+    <p class="estim-sub">Estime ta consommation et ta dépense pour un nombre de kilomètres, d'après tes moyennes réelles.</p>
+    <div class="estim-form">
+      <div class="field"><label>Véhicule</label><select id="estim-vehicule" onchange="estimVehiculeChange(this.value)"></select></div>
+      <div class="field"><label>Kilomètres prévus</label><input type="number" id="estim-km" min="0" inputmode="numeric" placeholder="Ex : 500" oninput="calculerEstimation()"></div>
+    </div>
+    <div class="estim-base">
+      <div>Conso. moyenne : <span id="estim-conso-moy">—</span></div>
+      <div>Prix moyen : <span id="estim-prix-moy">—</span></div>
+    </div>
+    <div class="estim-warn" id="estim-warn" style="display:none"></div>
+    <div class="estim-results" id="estim-results" style="display:none">
+      <div class="estim-card"><div class="estim-val" id="estim-litres">—</div><div class="estim-unit">litres estimés</div></div>
+      <div class="estim-card"><div class="estim-val" id="estim-cout">—</div><div class="estim-unit">€ de dépense</div></div>
+      <div class="estim-card"><div class="estim-val" id="estim-pleins">—</div><div class="estim-unit">pleins environ</div></div>
+    </div>
   </div>
 
   <!-- ONGLET PARAMÈTRES -->
@@ -439,6 +460,7 @@
 <script src="/js/settings.js"></script>
 <script src="/js/stations.js"></script>
 <script src="/js/entretien.js"></script>
+<script src="/js/estimation.js"></script>
 <script src="/js/app.js"></script>
 
 </body>
