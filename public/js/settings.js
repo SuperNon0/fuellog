@@ -186,6 +186,16 @@ async function renderVersion() {
   } catch (e) { el.textContent = 'Version indisponible'; }
 }
 
+async function voirJournalUpdate() {
+  const box = document.getElementById('update-log-box');
+  box.style.display = 'block';
+  box.textContent = 'Chargement…';
+  try {
+    const r = await getUpdateLog();
+    box.textContent = r.log || '(vide)';
+  } catch (e) { box.textContent = 'Impossible de lire le journal.'; }
+}
+
 async function mettreAJour() {
   if (!confirm("Lancer la mise à jour ? L'application va se recharger dans ~30 secondes.")) return;
   const btn = document.getElementById('btn-update');

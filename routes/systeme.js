@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const fs = require('fs');
 const { exec, spawn } = require('child_process');
 
 const APP_DIR = path.join(__dirname, '..');
 const PM2_NAME = process.env.PM2_NAME || 'fuellog';
+const LOG_PATH = path.join(APP_DIR, 'update.log');
 // Sécurité : la mise à jour distante n'est active que si explicitement autorisée.
 const ALLOW_UPDATE = process.env.ALLOW_SELF_UPDATE === '1';
 
@@ -25,13 +27,40 @@ router.get('/check', (req, res) => {
   });
 });
 
-// Lancer la mise à jour (git pull + npm install + redémarrage), en tâche détachée
+// Journal de la dernière mise à jour (pour diagnostiquer)
+router.get('/update-log', (req, res) => {
+  fs.readFile(LOG_PATH, 'utf8', (err, data) => {
+    res.json({ log: err ? '(aucun journal de mise à jour)' : data });
+  });
+});
+
+// Lancer la mise à jour, en tâche détachée, journalisée.
+// On s'aligne de force sur la branche courante (git reset --hard) pour éviter
+// l'échec du pull quand npm a modifié package-lock.json sur le serveur.
 router.post('/update', (req, res) => {
   if (!ALLOW_UPDATE) {
     return res.status(403).json({ error: "Mise à jour non autorisée. Définis ALLOW_SELF_UPDATE=1 dans l'environnement du serveur." });
   }
-  const cmd = `git pull && npm install --omit=dev && pm2 restart ${PM2_NAME}`;
-  const child = spawn('sh', ['-c', cmd], { cwd: APP_DIR, detached: true, stdio: 'ignore' });
+  const cmd = [
+    'echo "=== Mise a jour $(date) ==="',
+    'BRANCH=$(git rev-parse --abbrev-ref HEAD)',
+    'echo "Branche : $BRANCH"',
+    'git fetch origin "$BRANCH" 2>&1',
+    'git reset --hard "origin/$BRANCH" 2>&1',
+    'npm install --omit=dev 2>&1',
+    'echo "=== Redemarrage ==="',
+    `pm2 restart ${PM2_NAME} 2>&1 || echo "ATTENTION: pm2 introuvable dans le PATH"`,
+    'echo "=== Termine ==="'
+  ].join(' && ');
+
+  let out;
+  try { out = fs.openSync(LOG_PATH, 'w'); } catch (e) { out = 'ignore'; }
+  const child = spawn('sh', ['-c', cmd], {
+    cwd: APP_DIR,
+    detached: true,
+    stdio: ['ignore', out, out],
+    env: process.env
+  });
   child.unref();
   res.json({ ok: true, message: 'Mise à jour lancée. Le serveur va redémarrer dans quelques secondes.' });
 });

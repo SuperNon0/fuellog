@@ -317,6 +317,7 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 .param-data-btn:active{border-color:var(--accent)}
 .param-data-warn{color:var(--accent3);border-color:rgba(232,124,71,.3)}
 .param-version{font-size:.66rem;color:var(--muted);margin-bottom:.7rem;font-family:'DM Mono',monospace}
+.update-log{margin-top:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.7rem;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);white-space:pre-wrap;word-break:break-word;max-height:240px;overflow:auto}
 
 /* ESTIMATION */
 .estim-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--accent);line-height:1;margin-bottom:.3rem}

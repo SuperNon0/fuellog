@@ -8,6 +8,9 @@ node_modules/
 # Pièces jointes des entretiens (fichiers uploadés)
 uploads/
 
+# Journal de mise à jour généré au runtime
+update.log
+
 # Archives
 *.rar
 *.zip

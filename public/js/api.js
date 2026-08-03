@@ -64,3 +64,4 @@ async function importBackup(backupObj) { return apiCall('POST', '/api/donnees/im
 async function getVersion() { return apiCall('GET', '/api/systeme/version'); }
 async function checkUpdate() { return apiCall('GET', '/api/systeme/check'); }
 async function launchUpdate() { return apiCall('POST', '/api/systeme/update'); }
+async function getUpdateLog() { return apiCall('GET', '/api/systeme/update-log'); }
