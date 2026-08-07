@@ -11,6 +11,10 @@ uploads/
 # Journal de mise à jour généré au runtime
 update.log
 
+# Secrets d'authentification (générés au runtime)
+config.json
+users.json
+
 # Archives
 *.rar
 *.zip

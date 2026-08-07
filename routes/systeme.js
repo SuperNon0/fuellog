@@ -3,6 +3,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const { exec, spawn } = require('child_process');
+const auth = require('../auth');
 
 const APP_DIR = path.join(__dirname, '..');
 const PM2_NAME = process.env.PM2_NAME || 'fuellog';
@@ -63,6 +64,17 @@ router.post('/update', (req, res) => {
   });
   child.unref();
   res.json({ ok: true, message: 'Mise à jour lancée. Le serveur va redémarrer dans quelques secondes.' });
+});
+
+// Changer le mot de passe du panel (utilisateur déjà connecté)
+router.post('/password', (req, res) => {
+  const { password } = req.body || {};
+  try {
+    auth.setPassword(String(password || ''));
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 module.exports = router;

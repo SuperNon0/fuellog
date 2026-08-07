@@ -186,6 +186,21 @@ async function renderVersion() {
   } catch (e) { el.textContent = 'Version indisponible'; }
 }
 
+async function changerMotDePasse() {
+  const input = document.getElementById('param-newpass');
+  const pw = input.value;
+  if (!pw || pw.length < 8) { toast('Mot de passe : 8 caractères minimum.', true); return; }
+  const r = await changePassword(pw);
+  if (r.error) { toast(r.error, true); return; }
+  input.value = '';
+  toast('Mot de passe modifié ✓');
+}
+
+function seDeconnecter() {
+  if (!confirm('Se déconnecter du panel ?')) return;
+  window.location.href = '/logout';
+}
+
 async function voirJournalUpdate() {
   const box = document.getElementById('update-log-box');
   box.style.display = 'block';
