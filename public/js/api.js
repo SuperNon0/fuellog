@@ -67,6 +67,6 @@ async function getVersion() { return apiCall('GET', '/api/systeme/version'); }
 async function checkUpdate() { return apiCall('GET', '/api/systeme/check'); }
 async function launchUpdate() { return apiCall('POST', '/api/systeme/update'); }
 async function getUpdateLog() { return apiCall('GET', '/api/systeme/update-log'); }
-async function changePassword(password) { return apiCall('POST', '/api/systeme/password', { password }); }
-async function getAuthSettings() { return apiCall('GET', '/api/systeme/auth-settings'); }
-async function saveAuthSettings(s) { return apiCall('POST', '/api/systeme/auth-settings', s); }
+async function getAuthState() { return apiCall('GET', '/api/systeme/auth-state'); }
+async function setPasswordApi(currentPassword, newPassword) { return apiCall('POST', '/api/systeme/password', { currentPassword, newPassword }); }
+async function disableProtection(currentPassword) { return apiCall('POST', '/api/systeme/disable', { currentPassword }); }

@@ -8,9 +8,6 @@ User=fuellog
 Group=fuellog
 WorkingDirectory=/opt/fuellog
 Environment=PORT=3000
-# Écoute locale (le tunnel Cloudflare tourne sur la même machine).
-# Passe à 0.0.0.0 seulement si tu exposes l'app autrement (déconseillé).
-Environment=HOST=127.0.0.1
 Environment=ALLOW_SELF_UPDATE=1
 Environment=PM2_NAME=fuellog
 ExecStart=/usr/bin/node /opt/fuellog/server.js

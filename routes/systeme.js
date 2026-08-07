@@ -74,23 +74,35 @@ router.post('/update', (req, res) => {
   res.json({ ok: true, message: 'Mise à jour lancée. Le serveur va redémarrer dans quelques secondes.' });
 });
 
-// Réglages d'auto-login Cloudflare (lecture / écriture)
-router.get('/auth-settings', (req, res) => {
-  res.json(auth.getAuthSettings());
-});
-router.post('/auth-settings', (req, res) => {
-  res.json(auth.setAuthSettings(req.body || {}));
-});
+// État de la protection par mot de passe
+router.get('/auth-state', (req, res) => res.json({ enabled: auth.isEnabled() }));
 
-// Changer le mot de passe du panel (utilisateur déjà connecté)
+// Définir / changer le mot de passe admin.
+// - protection désactivée : définit le 1er mot de passe (l'active).
+// - protection activée : exige le mot de passe actuel (session déjà requise par la porte).
 router.post('/password', (req, res) => {
-  const { password } = req.body || {};
+  const { currentPassword, newPassword } = req.body || {};
+  if (auth.isEnabled() && !auth.checkPassword(String(currentPassword || ''))) {
+    return res.status(403).json({ error: 'Mot de passe actuel incorrect.' });
+  }
   try {
-    auth.setPassword(String(password || ''));
-    res.json({ ok: true });
+    auth.setPassword(String(newPassword || ''));
+    auth.setSessionCookie(res);
+    res.json({ ok: true, enabled: true });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
+});
+
+// Désactiver la protection (panel de nouveau ouvert). Exige le mot de passe actuel.
+router.post('/disable', (req, res) => {
+  if (!auth.isEnabled()) return res.json({ ok: true, enabled: false });
+  if (!auth.checkPassword(String((req.body || {}).currentPassword || ''))) {
+    return res.status(403).json({ error: 'Mot de passe incorrect.' });
+  }
+  auth.clearPassword();
+  auth.clearSessionCookie(res);
+  res.json({ ok: true, enabled: false });
 });
 
 module.exports = router;

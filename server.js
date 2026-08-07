@@ -5,11 +5,7 @@ const auth = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Écoute en local par défaut (socle) : l'app n'est joignable que depuis la même
-// machine (tunnel Cloudflare / reverse-proxy). Empêche un accès réseau direct
-// qui contournerait Cloudflare en forgeant l'en-tête d'auto-login.
-// Mettre HOST=0.0.0.0 pour exposer directement sur le réseau (déconseillé).
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const PUBLIC = path.join(__dirname, 'public');
 
@@ -23,12 +19,13 @@ app.use(auth.attachUser);
 
 // ---- Pages et assets publics (accessibles sans être connecté) ----
 app.get('/login', (req, res) => {
-  if (req.authed) return res.redirect('/');
+  // Protection désactivée ou déjà connecté → pas de page de login.
+  if (!auth.isEnabled() || req.authed) return res.redirect('/');
   res.sendFile(path.join(PUBLIC, 'login.html'));
 });
 app.post('/login', (req, res) => {
-  const stored = auth.loadUsers().admin;
-  if (auth.verifyPassword(req.body.password || '', stored)) {
+  if (!auth.isEnabled()) return res.redirect('/');
+  if (auth.checkPassword(req.body.password || '')) {
     auth.setSessionCookie(res);
     return res.redirect('/');
   }

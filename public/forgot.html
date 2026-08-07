@@ -13,15 +13,17 @@
   <div class="login-card forgot-card">
     <div class="logo login-logo"><span class="g">fuel</span><span class="i">log</span></div>
     <span class="badge">mot de passe oublié</span>
-    <p class="forgot-intro">Le mot de passe se réinitialise <b>depuis le serveur</b> (console du conteneur ou SSH), puisque tu ne peux plus te connecter au panel.</p>
+    <p class="forgot-intro">Pas d'e-mail ici : la réinitialisation se fait <b>sur le serveur</b> où tourne FuelLog, avec un petit script de secours.</p>
     <ol class="forgot-steps">
       <li>Ouvre un terminal du serveur FuelLog (console du LXC, ou <code>ssh …</code>).</li>
-      <li>Lance cette commande, puis choisis un nouveau mot de passe :
+      <li>Efface le mot de passe (le panel redevient ouvert) :
         <pre class="forgot-cmd">sudo bash /opt/fuellog/reset-admin-password.sh</pre>
+        …ou définis-en un nouveau directement :
+        <pre class="forgot-cmd">sudo bash /opt/fuellog/reset-admin-password.sh "nouveau-mot-de-passe"</pre>
       </li>
-      <li>Reviens ici et connecte-toi avec le nouveau mot de passe.</li>
+      <li>Redémarre le service : <code>sudo systemctl restart fuellog</code> (ou <code>pm2 restart fuellog</code>).</li>
     </ol>
-    <p class="forgot-note">Secours ultime : <code>sudo rm /opt/fuellog/users.json</code> puis redémarrer le service (<code>pm2 restart fuellog</code>) remet le mot de passe défini à l'installation.</p>
+    <p class="forgot-note">Ensuite, reconnecte-toi — ou redéfinis un mot de passe dans Paramètres → Compte &amp; sécurité.</p>
     <a class="btn primary full" href="/login">← Retour à la connexion</a>
   </div>
 </body>

@@ -41,25 +41,43 @@ async function initParametres() {
   await loadTypes();
   renderParametres();
   renderVersion();
-  renderAuthSettings();
+  renderCompte();
 }
 
-async function renderAuthSettings() {
+let compteEnabled = false;
+async function renderCompte() {
   try {
-    const s = await getAuthSettings();
-    const auto = document.getElementById('cf-auto');
-    const email = document.getElementById('cf-email');
-    if (auto) auto.checked = !!s.cfAutoLogin;
-    if (email) email.value = s.cfAllowedEmail || '';
-  } catch (e) {}
+    const s = await getAuthState();
+    compteEnabled = !!s.enabled;
+  } catch (e) { compteEnabled = false; }
+  document.getElementById('compte-state').textContent = compteEnabled
+    ? '🔒 Protection activée — un mot de passe est demandé à la connexion.'
+    : '🔓 Panel ouvert — aucun mot de passe (protégé par Cloudflare Access / réseau).';
+  document.getElementById('compte-pass-label').textContent = compteEnabled ? 'Changer le mot de passe' : 'Définir un mot de passe';
+  document.getElementById('compte-cur-row').style.display = compteEnabled ? '' : 'none';
+  document.getElementById('btn-disable').style.display = compteEnabled ? '' : 'none';
+  document.getElementById('btn-logout').style.display = compteEnabled ? '' : 'none';
 }
 
-async function enregistrerAuthCF() {
-  const cfAutoLogin = document.getElementById('cf-auto').checked;
-  const cfAllowedEmail = document.getElementById('cf-email').value.trim();
-  const r = await saveAuthSettings({ cfAutoLogin, cfAllowedEmail });
+async function enregistrerMotDePasse() {
+  const cur = document.getElementById('cur-pass').value;
+  const nw = document.getElementById('new-pass').value;
+  if (!nw || nw.length < 6) { toast('Mot de passe : 6 caractères minimum.', true); return; }
+  const r = await setPasswordApi(cur, nw);
   if (r && r.error) { toast(r.error, true); return; }
-  toast('Réglages de connexion enregistrés ✓');
+  document.getElementById('cur-pass').value = '';
+  document.getElementById('new-pass').value = '';
+  toast(compteEnabled ? 'Mot de passe modifié ✓' : 'Protection activée ✓');
+  renderCompte();
+}
+
+async function desactiverProtection() {
+  const cur = prompt('Mot de passe actuel pour désactiver la protection :');
+  if (cur === null) return;
+  const r = await disableProtection(cur);
+  if (r && r.error) { toast(r.error, true); return; }
+  toast('Protection désactivée — panel ouvert.');
+  renderCompte();
 }
 
 function renderParametres() {
@@ -203,16 +221,6 @@ async function renderVersion() {
     if (btn) btn.style.display = v.updateEnabled ? '' : 'none';
     if (!v.updateEnabled && el) el.textContent += ' · (mise à jour auto désactivée)';
   } catch (e) { el.textContent = 'Version indisponible'; }
-}
-
-async function changerMotDePasse() {
-  const input = document.getElementById('param-newpass');
-  const pw = input.value;
-  if (!pw || pw.length < 8) { toast('Mot de passe : 8 caractères minimum.', true); return; }
-  const r = await changePassword(pw);
-  if (r.error) { toast(r.error, true); return; }
-  input.value = '';
-  toast('Mot de passe modifié ✓');
 }
 
 function seDeconnecter() {

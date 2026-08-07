@@ -94,9 +94,9 @@ La restauration remplace toutes les données actuelles par celles de la sauvegar
 
 ## Connexion & sécurité
 
-- **Login mot de passe unique** (compte `admin`), haché en scrypt, session signée.
-- **Auto-login Cloudflare Access** réglable dans Paramètres → 🔐 Compte : activable/désactivable, avec email autorisé optionnel (vide = tout compte validé par Cloudflare).
-- **Mot de passe oublié** : `sudo bash /opt/fuellog/reset-admin-password.sh`. Secours ultime : supprimer `users.json` et redémarrer restaure le mot de passe d'origine.
+- **Protection optionnelle** : par défaut le panel est **ouvert** (protégé par Cloudflare Access ou le réseau). Tu définis un mot de passe seulement si tu veux une couche en plus, dans Paramètres → 🔐 Compte & sécurité.
+- Une fois défini, **login par mot de passe** (compte `admin`), haché en scrypt, session par cookie signé. Changer le mot de passe exige le mot de passe actuel ; on peut aussi désactiver la protection.
+- **Mot de passe oublié** : `sudo bash /opt/fuellog/reset-admin-password.sh` (sans argument efface le mot de passe → panel ouvert ; avec argument en définit un nouveau), puis redémarrer le service.
 - Secrets (`config.json`, `users.json`) générés au runtime, hors dépôt.
 
 ## Mises à jour
@@ -112,8 +112,8 @@ En un clic depuis **Paramètres → « ⬆️ Mettre à jour »**. En déploieme
 | `UPLOAD_DIR` | `<projet>/uploads` | Dossier des pièces jointes |
 | `CONFIG_PATH` | `<projet>/config.json` | Secret de session + hash d'origine |
 | `USERS_PATH` | `<projet>/users.json` | Compte admin (hash courant) |
+| `HOST` | `0.0.0.0` | Interface d'écoute |
 | `ALLOW_SELF_UPDATE` | `1` (systemd/ecosystem) | Autorise le bouton de mise à jour |
-| `CF_ALLOWED_EMAIL` | *(vide)* | Email initial autorisé pour l'auto-login Cloudflare |
 | `PM2_NAME` | `fuellog` | Nom du process PM2 à redémarrer (déploiement PM2) |
 
 ## Structure

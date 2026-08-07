@@ -267,23 +267,22 @@
     </div>
 
     <div class="param-section">
-      <h2 class="param-title">🔐 Compte</h2>
+      <h2 class="param-title">🔐 Compte &amp; sécurité</h2>
       <div class="param-account">
-        <div class="param-sublabel">Changer le mot de passe</div>
-        <div class="param-add-row">
-          <input type="password" id="param-newpass" placeholder="Nouveau mot de passe (8 car. min.)" autocomplete="new-password">
-          <button onclick="changerMotDePasse()">✓</button>
-        </div>
+        <div id="compte-state" class="param-desc">…</div>
 
-        <div class="param-sublabel">Connexion automatique Cloudflare Access</div>
-        <label class="cf-toggle"><input type="checkbox" id="cf-auto" onchange="enregistrerAuthCF()"> Activer l'auto-login derrière Cloudflare</label>
-        <div class="param-add-row">
-          <input type="email" id="cf-email" placeholder="Email autorisé (laisser vide = tous)" autocomplete="off">
-          <button onclick="enregistrerAuthCF()">✓</button>
+        <div class="param-sublabel" id="compte-pass-label">Définir un mot de passe</div>
+        <div class="param-add-row" id="compte-cur-row" style="display:none">
+          <input type="password" id="cur-pass" placeholder="Mot de passe actuel" autocomplete="current-password">
         </div>
-        <div class="param-desc">Vide = tout compte validé par Cloudflare est accepté (Cloudflare gère déjà qui entre). Renseigne un email pour restreindre. Décoche pour toujours exiger le mot de passe, même derrière Cloudflare.</div>
+        <div class="param-add-row">
+          <input type="password" id="new-pass" placeholder="Nouveau mot de passe (6 car. min.)" autocomplete="new-password">
+          <button onclick="enregistrerMotDePasse()">✓</button>
+        </div>
+        <div class="param-desc">Sans mot de passe, le panel reste ouvert (protégé par Cloudflare Access / ton réseau). Définis-en un pour exiger une connexion.</div>
 
-        <button class="logout-btn" onclick="seDeconnecter()">🚪 Se déconnecter</button>
+        <button class="logout-btn" id="btn-disable" onclick="desactiverProtection()" style="display:none">🔓 Désactiver la protection</button>
+        <button class="logout-btn" id="btn-logout" onclick="seDeconnecter()" style="display:none">🚪 Se déconnecter</button>
       </div>
     </div>
   </div>
