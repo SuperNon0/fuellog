@@ -11,13 +11,13 @@
 #    bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/BRANCHE/proxmox/fuellog-lxc.sh)"
 #
 #  Personnalisation (variables d'environnement, toutes optionnelles) :
-#    CTID=210 HOSTNAME=fuellog CORES=1 MEMORY=512 DISK=4 PANEL_PORT=3000 \
+#    CTID=210 HOSTNAME=FuelLog CORES=1 MEMORY=512 DISK=4 PANEL_PORT=3000 \
 #      bash fuellog-lxc.sh
 # ============================================================================
 set -euo pipefail
 
 CTID="${CTID:-}"                         # vide = prochain ID libre
-HOSTNAME="${HOSTNAME:-fuellog}"
+HOSTNAME="${HOSTNAME:-FuelLog}"          # nom du conteneur affiché dans Proxmox
 CORES="${CORES:-1}"
 MEMORY="${MEMORY:-512}"                   # Mo
 SWAP="${SWAP:-512}"
