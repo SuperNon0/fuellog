@@ -66,6 +66,14 @@ router.post('/update', (req, res) => {
   res.json({ ok: true, message: 'Mise à jour lancée. Le serveur va redémarrer dans quelques secondes.' });
 });
 
+// Réglages d'auto-login Cloudflare (lecture / écriture)
+router.get('/auth-settings', (req, res) => {
+  res.json(auth.getAuthSettings());
+});
+router.post('/auth-settings', (req, res) => {
+  res.json(auth.setAuthSettings(req.body || {}));
+});
+
 // Changer le mot de passe du panel (utilisateur déjà connecté)
 router.post('/password', (req, res) => {
   const { password } = req.body || {};

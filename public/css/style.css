@@ -366,3 +366,6 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 /* Déconnexion / compte dans Paramètres */
 .param-account{display:flex;flex-direction:column;gap:.6rem}
 .logout-btn{background:rgba(232,92,71,.08);color:var(--danger);border:1px solid rgba(232,92,71,.25);border-radius:8px;font-family:'DM Mono',monospace;font-size:.72rem;padding:.7rem .9rem;cursor:pointer}
+.param-sublabel{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:.3rem}
+.cf-toggle{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text);cursor:pointer}
+.cf-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}

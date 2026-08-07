@@ -36,15 +36,33 @@ function loadConfig() {
 
 function ensureConfig() {
   let cfg = loadConfig();
+  let changed = false;
   if (!cfg || !cfg.secret) {
     cfg = {
       secret: crypto.randomBytes(32).toString('hex'),
       password_hash: hashPassword(DEFAULT_PASSWORD)
     };
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2));
+    changed = true;
     console.log(`[auth] config.json créé. Mot de passe par défaut : "${DEFAULT_PASSWORD}" — change-le dans Paramètres ou via reset-admin-password.sh`);
   }
+  // Réglages d'auto-login Cloudflare (modifiables depuis les Paramètres).
+  if (cfg.cf_auto_login === undefined) { cfg.cf_auto_login = true; changed = true; }
+  if (cfg.cf_allowed_email === undefined) { cfg.cf_allowed_email = CF_ALLOWED_EMAIL; changed = true; }
+  if (changed) fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2));
   return cfg;
+}
+
+function getAuthSettings() {
+  const cfg = ensureConfig();
+  return { cfAutoLogin: cfg.cf_auto_login !== false, cfAllowedEmail: cfg.cf_allowed_email || '' };
+}
+
+function setAuthSettings(s) {
+  const cfg = ensureConfig();
+  cfg.cf_auto_login = !!(s && s.cfAutoLogin);
+  cfg.cf_allowed_email = String((s && s.cfAllowedEmail) || '').trim().toLowerCase();
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2));
+  return getAuthSettings();
 }
 
 // ---- Comptes (fichier réinscriptible ; supprimé => retour au hash d'origine) ----
@@ -103,10 +121,14 @@ function attachUser(req, res, next) {
   // 1. Session cookie
   const token = parseCookies(req)[SESSION_COOKIE];
   if (token && verifySession(token)) req.authed = true;
-  // 2. Auto-login Cloudflare Access (en-tête ajouté par Cloudflare)
+  // 2. Auto-login Cloudflare Access (en-tête ajouté par Cloudflare), si activé
   if (!req.authed) {
-    const email = (req.headers['cf-access-authenticated-user-email'] || '').trim().toLowerCase();
-    if (email && (!CF_ALLOWED_EMAIL || email === CF_ALLOWED_EMAIL)) req.authed = true;
+    const cfg = loadConfig() || {};
+    if (cfg.cf_auto_login !== false) {
+      const email = (req.headers['cf-access-authenticated-user-email'] || '').trim().toLowerCase();
+      const allowed = (cfg.cf_allowed_email || '').trim().toLowerCase();
+      if (email && (!allowed || email === allowed)) req.authed = true;
+    }
   }
   next();
 }
@@ -128,5 +150,6 @@ function clearSessionCookie(res) {
 
 module.exports = {
   ensureConfig, loadUsers, verifyPassword, setPassword,
-  attachUser, requireAuth, setSessionCookie, clearSessionCookie
+  attachUser, requireAuth, setSessionCookie, clearSessionCookie,
+  getAuthSettings, setAuthSettings
 };

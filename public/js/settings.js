@@ -41,6 +41,25 @@ async function initParametres() {
   await loadTypes();
   renderParametres();
   renderVersion();
+  renderAuthSettings();
+}
+
+async function renderAuthSettings() {
+  try {
+    const s = await getAuthSettings();
+    const auto = document.getElementById('cf-auto');
+    const email = document.getElementById('cf-email');
+    if (auto) auto.checked = !!s.cfAutoLogin;
+    if (email) email.value = s.cfAllowedEmail || '';
+  } catch (e) {}
+}
+
+async function enregistrerAuthCF() {
+  const cfAutoLogin = document.getElementById('cf-auto').checked;
+  const cfAllowedEmail = document.getElementById('cf-email').value.trim();
+  const r = await saveAuthSettings({ cfAutoLogin, cfAllowedEmail });
+  if (r && r.error) { toast(r.error, true); return; }
+  toast('Réglages de connexion enregistrés ✓');
 }
 
 function renderParametres() {
