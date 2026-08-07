@@ -306,8 +306,9 @@ function updateMiniStats(){
   const complets=data.filter(p=>p.kmTotal!==null);
   const avecPrix=data.filter(p=>p.prixL>0);
   document.getElementById('s-prixL').textContent=avecPrix.length?avecPrix[avecPrix.length-1].prixL.toFixed(3):'—';
-  if(complets.length){
-    document.getElementById('s-km-moy').textContent=Math.round(complets.reduce((s,p)=>s+kmParcourus(p),0)/complets.length);
+  const avecKm=complets.filter(p=>kmParcourus(p)!=null);
+  if(avecKm.length){
+    document.getElementById('s-km-moy').textContent=Math.round(avecKm.reduce((s,p)=>s+kmParcourus(p),0)/avecKm.length);
     document.getElementById('s-dep-moy').textContent=(dep/data.length).toFixed(2);
   }else{document.getElementById('s-km-moy').textContent='—';document.getElementById('s-dep-moy').textContent='—';}
   const precVals=complets.map(p=>precision(p)).filter(v=>v&&v>0&&v<3);
@@ -333,7 +334,7 @@ function renderStats(){
   const dep=fdata.reduce((s,p)=>s+p.total,0);
   const avecL=fdata.filter(p=>p.litres>0);const totL=avecL.reduce((s,p)=>s+p.litres,0);
   const avecP=fdata.filter(p=>p.prixL>0);const pMoy=avecP.length?avecP.reduce((s,p)=>s+p.prixL,0)/avecP.length:0;
-  const kmTot=complets.reduce((s,p)=>s+kmParcourus(p),0);
+  const kmTot=complets.filter(p=>kmParcourus(p)!=null).reduce((s,p)=>s+kmParcourus(p),0);
   document.getElementById('st-total').textContent=dep.toFixed(2);
   document.getElementById('st-litres').textContent=totL>0?totL.toFixed(1):'—';
   document.getElementById('st-prixmoy').textContent=pMoy>0?pMoy.toFixed(3):'—';

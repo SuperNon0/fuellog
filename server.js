@@ -5,6 +5,11 @@ const auth = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// Écoute en local par défaut (socle) : l'app n'est joignable que depuis la même
+// machine (tunnel Cloudflare / reverse-proxy). Empêche un accès réseau direct
+// qui contournerait Cloudflare en forgeant l'en-tête d'auto-login.
+// Mettre HOST=0.0.0.0 pour exposer directement sur le réseau (déconseillé).
+const HOST = process.env.HOST || '127.0.0.1';
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const PUBLIC = path.join(__dirname, 'public');
 
@@ -55,4 +60,4 @@ app.use('/api/types', require('./routes/types'));
 app.use('/api/donnees', require('./routes/donnees'));
 app.use('/api/systeme', require('./routes/systeme'));
 
-app.listen(PORT, () => console.log('FuelLog running on port ' + PORT));
+app.listen(PORT, HOST, () => console.log(`FuelLog running on ${HOST}:${PORT}`));

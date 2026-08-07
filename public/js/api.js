@@ -8,6 +8,8 @@ async function apiCall(method, url, body) {
     headers: body ? { 'Content-Type': 'application/json' } : {},
     body: body ? JSON.stringify(body) : undefined
   });
+  // Session expirée : rediriger vers la connexion plutôt que de casser l'UI.
+  if (res.status === 401) { window.location.href = '/login'; return new Promise(() => {}); }
   return res.json();
 }
 

@@ -34,7 +34,7 @@ function renderEntretiens() {
     return `<div class="ent-card">
       <div class="ent-top">
         <div>
-          <div class="ent-cat">${e.categorie || 'Entretien'}</div>
+          <div class="ent-cat">${escapeHtml(e.categorie || 'Entretien')}</div>
           <div class="ent-meta">${dt}${e.km != null ? ' · ' + e.km.toLocaleString('fr-FR') + ' km' : ''}</div>
         </div>
         <div class="ent-cout">${(e.cout || 0) > 0 ? (e.cout).toFixed(2) + ' €' : ''}</div>

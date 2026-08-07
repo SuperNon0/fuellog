@@ -15,8 +15,8 @@ router.get('/refresh-prix', async (req, res) => {
   const favs = db.prepare('SELECT * FROM favoris').all();
   if (!favs.length) return res.json([]);
   try {
-    const ids = favs.map(f => f.id).join(',');
-    const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100&where=id IN (${ids})`;
+    const ids = favs.map(f => String(f.id).replace(/[^0-9]/g, '')).filter(Boolean).join(',');
+    const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100&where=${encodeURIComponent(`id IN (${ids})`)}`;
     const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const data = await response.json();
