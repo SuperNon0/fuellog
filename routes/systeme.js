@@ -42,17 +42,25 @@ router.post('/update', (req, res) => {
   if (!ALLOW_UPDATE) {
     return res.status(403).json({ error: "Mise à jour non autorisée. Définis ALLOW_SELF_UPDATE=1 dans l'environnement du serveur." });
   }
-  const cmd = [
-    'echo "=== Mise a jour $(date) ==="',
-    'BRANCH=$(git rev-parse --abbrev-ref HEAD)',
-    'echo "Branche : $BRANCH"',
-    'git fetch origin "$BRANCH" 2>&1',
-    'git reset --hard "origin/$BRANCH" 2>&1',
-    'npm install --omit=dev 2>&1',
-    'echo "=== Redemarrage ==="',
-    `pm2 restart ${PM2_NAME} 2>&1 || echo "ATTENTION: pm2 introuvable dans le PATH"`,
-    'echo "=== Termine ==="'
-  ].join(' && ');
+  // Déploiement systemd (socle) : déléguer à l'updater root via sudo.
+  // Sinon (déploiement pm2) : mise à jour en ligne + redémarrage pm2.
+  const SYSTEMD_UPDATER = '/usr/local/sbin/fuellog-update';
+  let cmd;
+  if (fs.existsSync(SYSTEMD_UPDATER)) {
+    cmd = `echo "=== Mise a jour $(date) (systemd) ===" && sudo -n ${SYSTEMD_UPDATER} 2>&1`;
+  } else {
+    cmd = [
+      'echo "=== Mise a jour $(date) (pm2) ==="',
+      'BRANCH=$(git rev-parse --abbrev-ref HEAD)',
+      'echo "Branche : $BRANCH"',
+      'git fetch origin "$BRANCH" 2>&1',
+      'git reset --hard "origin/$BRANCH" 2>&1',
+      'npm install --omit=dev 2>&1',
+      'echo "=== Redemarrage ==="',
+      `pm2 restart ${PM2_NAME} 2>&1 || echo "ATTENTION: pm2 introuvable dans le PATH"`,
+      'echo "=== Termine ==="'
+    ].join(' && ');
+  }
 
   let out;
   try { out = fs.openSync(LOG_PATH, 'w'); } catch (e) { out = 'ignore'; }

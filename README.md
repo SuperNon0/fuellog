@@ -45,40 +45,44 @@ Application web progressive (PWA) de suivi de carburant et d'entretien pour un o
 | Back-end | Node.js + Express 5 |
 | Base de données | SQLite (better-sqlite3) |
 | Upload / PDF | multer + pdf-lib |
-| Front-end | HTML / CSS / JS vanilla |
-| Carte / graphiques | Leaflet.js + Chart.js |
-| Process manager | PM2 |
+| Front-end | HTML / CSS / JS vanilla (hors-ligne, sans CDN) |
+| Carte / graphiques | Leaflet.js + Chart.js (hébergés localement) |
+| Connexion | Mot de passe unique + auto-login Cloudflare Access |
+| Process manager | systemd (socle) ou PM2 |
 
-## Installation dans un conteneur LXC (Proxmox) dédié
+## Installation
 
-### 1. Créer le conteneur
+### Option A — Proxmox, une seule commande (recommandé)
 
-Sur l'hôte Proxmox (ou via l'interface web), crée un LXC **Debian 12** :
-- 1 vCPU, 512 Mo de RAM, 4 Go de disque suffisent largement
-- Réseau avec accès Internet
+Sur l'**hôte Proxmox**, colle cette commande : elle crée le conteneur LXC Debian 12, l'installe et le démarre entièrement.
 
-### 2. Installation automatique
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/claude/review-project-structure-BvFkQ/proxmox/fuellog-lxc.sh)"
+```
 
-Dans la console du conteneur, en **root**, une seule commande :
+Personnalisable : `CTID=210 HOSTNAME=fuellog CORES=1 MEMORY=512 DISK=4 bash fuellog-lxc.sh`
+
+### Option B — dans un conteneur/VM Debian existant
+
+En **root**, dans le conteneur :
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/claude/review-project-structure-BvFkQ/install.sh)
 ```
 
-Le script installe Node.js, PM2, clone le dépôt, installe les dépendances, démarre le service et l'active au démarrage du conteneur.
+`install.sh` crée un **utilisateur dédié non-root** (`fuellog`), installe Node.js, un **service systemd**, un **sudoers minimal** (mise à jour en un clic) et démarre le tout. FuelLog est ensuite sur `http://<ip>:3000`.
 
-FuelLog est ensuite disponible sur `http://<ip-du-conteneur>:3000`.
+- **Mot de passe par défaut : `fuellog`** → change-le dans Paramètres → 🔐 Compte, ou `sudo bash /opt/fuellog/reset-admin-password.sh`.
+- Service : `systemctl status fuellog` · logs : `journalctl -u fuellog -f`
 
-> ⚠️ **Sécurité** — FuelLog n'a pas de système de connexion intégré. Place-le **derrière un accès protégé** (Cloudflare Access, reverse-proxy authentifié ou VPN) avant de l'exposer. C'est aussi ce qui protège le bouton de mise à jour (qui exécute des commandes shell).
+> ⚠️ **Sécurité** — un login mot de passe est intégré, mais garde aussi FuelLog **derrière un accès protégé** (Cloudflare Access ou VPN). L'auto-login Cloudflare se règle dans Paramètres → Compte.
 
-### Installation manuelle (alternative)
+### Option C — PM2 (alternative)
 
 ```bash
 git clone -b claude/review-project-structure-BvFkQ https://github.com/SuperNon0/fuellog.git /opt/fuellog
-cd /opt/fuellog
-npm install --omit=dev
-pm2 start ecosystem.config.js
-pm2 save && pm2 startup
+cd /opt/fuellog && npm install --omit=dev
+pm2 start ecosystem.config.js && pm2 save && pm2 startup
 ```
 
 ## Migrer les données d'une installation à une autre
@@ -88,9 +92,16 @@ pm2 save && pm2 startup
 
 La restauration remplace toutes les données actuelles par celles de la sauvegarde.
 
+## Connexion & sécurité
+
+- **Login mot de passe unique** (compte `admin`), haché en scrypt, session signée.
+- **Auto-login Cloudflare Access** réglable dans Paramètres → 🔐 Compte : activable/désactivable, avec email autorisé optionnel (vide = tout compte validé par Cloudflare).
+- **Mot de passe oublié** : `sudo bash /opt/fuellog/reset-admin-password.sh`. Secours ultime : supprimer `users.json` et redémarrer restaure le mot de passe d'origine.
+- Secrets (`config.json`, `users.json`) générés au runtime, hors dépôt.
+
 ## Mises à jour
 
-Une fois installé, les mises à jour se font en un clic depuis **Paramètres → « ⬆️ Mettre à jour »** (nécessite `ALLOW_SELF_UPDATE=1`, activé par défaut dans `ecosystem.config.js`). En cas de souci, **« 📋 Voir le journal de mise à jour »** affiche le détail.
+En un clic depuis **Paramètres → « ⬆️ Mettre à jour »**. En déploiement systemd, le panel délègue à l'updater root `/usr/local/sbin/fuellog-update` (via un sudoers minimal) qui aligne le dépôt, réinstalle les dépendances et redémarre le service de façon détachée. En cas de souci, **« 📋 Voir le journal de mise à jour »** affiche le détail.
 
 ## Variables d'environnement
 
@@ -99,8 +110,11 @@ Une fois installé, les mises à jour se font en un clic depuis **Paramètres �
 | `PORT` | `3000` | Port d'écoute |
 | `DB_PATH` | `<projet>/fuellog.db` | Emplacement de la base SQLite |
 | `UPLOAD_DIR` | `<projet>/uploads` | Dossier des pièces jointes |
-| `ALLOW_SELF_UPDATE` | `1` (via ecosystem) | Autorise le bouton de mise à jour |
-| `PM2_NAME` | `fuellog` | Nom du process PM2 à redémarrer |
+| `CONFIG_PATH` | `<projet>/config.json` | Secret de session + hash d'origine |
+| `USERS_PATH` | `<projet>/users.json` | Compte admin (hash courant) |
+| `ALLOW_SELF_UPDATE` | `1` (systemd/ecosystem) | Autorise le bouton de mise à jour |
+| `CF_ALLOWED_EMAIL` | *(vide)* | Email initial autorisé pour l'auto-login Cloudflare |
+| `PM2_NAME` | `fuellog` | Nom du process PM2 à redémarrer (déploiement PM2) |
 
 ## Structure
 

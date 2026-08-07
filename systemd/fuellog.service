@@ -1,0 +1,18 @@
+[Unit]
+Description=FuelLog — panel web de suivi carburant et entretien
+After=network.target
+
+[Service]
+Type=simple
+User=fuellog
+Group=fuellog
+WorkingDirectory=/opt/fuellog
+Environment=PORT=3000
+Environment=ALLOW_SELF_UPDATE=1
+Environment=PM2_NAME=fuellog
+ExecStart=/usr/bin/node /opt/fuellog/server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
