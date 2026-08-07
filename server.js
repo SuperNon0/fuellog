@@ -36,6 +36,8 @@ app.post('/logout', (req, res) => { auth.clearSessionCookie(res); res.redirect('
 // Ressources nécessaires aux pages de connexion (non sensibles)
 app.use('/css', express.static(path.join(PUBLIC, 'css')));
 app.use('/icons', express.static(path.join(PUBLIC, 'icons')));
+app.use('/fonts', express.static(path.join(PUBLIC, 'fonts')));
+app.use('/vendor', express.static(path.join(PUBLIC, 'vendor')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(PUBLIC, 'manifest.json')));
 
 // ---- À partir d'ici : authentification obligatoire ----
