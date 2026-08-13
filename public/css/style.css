@@ -369,3 +369,6 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 .param-sublabel{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:.3rem}
 .cf-toggle{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text);cursor:pointer}
 .cf-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+
+/* iOS : empêcher le zoom automatique au focus d'un champ (police >= 16px) */
+input, select, textarea { font-size: 16px !important; }
