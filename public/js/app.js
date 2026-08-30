@@ -56,8 +56,8 @@ function refreshAll(){
 
 // ---- HISTORIQUE (page d'accueil) ----
 function renderHistorique(){
-  // Banner Phase 1 : uniquement les vrais pleins en attente (pas les ajouts)
-  const openPleins=data.filter(p=>p.kmTotal===null&&estUnPlein(p));
+  // Banner Phase 1 : toute entrée en attente de Phase 2 (plein OU ajout)
+  const openPleins=data.filter(p=>p.kmTotal===null);
   const banner=document.getElementById('phase1-banner');
   if(openPleins.length){
     const p=openPleins[openPleins.length-1];
@@ -65,6 +65,9 @@ function renderHistorique(){
     document.getElementById('phase1-date').textContent=fd(p.date);
     document.getElementById('phase1-type').className='tag tag-'+p.type;
     document.getElementById('phase1-type').textContent=labelType(p.type);
+    const estP=estUnPlein(p);
+    document.getElementById('phase1-ajout').style.display=estP?'none':'inline-block';
+    document.getElementById('phase1-sub').textContent=(estP?'Plein':'Ajout')+' en attente — Phase 2 à compléter';
     document.getElementById('phase1-km').textContent=p.kmDepart?p.kmDepart.toLocaleString('fr-FR')+' km':'—';
     document.getElementById('phase1-odb').textContent=p.estimPlein?p.estimPlein+' km':'—';
     document.getElementById('phase1-total').textContent=p.total?p.total.toFixed(2)+' €':'—';
@@ -75,10 +78,10 @@ function renderHistorique(){
     banner.style.display='none';
   }
 
-  // Lignes historique : pleins complets + tous les ajouts (du plus récent)
-  const complets=[...data.filter(p=>p.kmTotal!==null||!estUnPlein(p))].reverse();
+  // Lignes historique : entrées complètes (plein ou ajout), du plus récent
+  const complets=[...data.filter(p=>p.kmTotal!==null)].reverse();
   const rows=document.getElementById('histo-rows');
-  if(!complets.length){rows.innerHTML='<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">⛽ Aucune entrée pour l\'instant.</div>';return;}
+  if(!complets.length){rows.innerHTML='<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">⛽ Aucune entrée complète pour l\'instant.</div>';return;}
   rows.innerHTML=complets.map((p,i)=>{
     const km=kmParcourus(p);
     const pr=precision(p);
@@ -148,7 +151,7 @@ function toggleDelConfirm(id){
 
 // ---- BADGE NAV ----
 function updateBadge(){
-  const n=data.filter(p=>p.kmTotal===null&&estUnPlein(p)).length;
+  const n=data.filter(p=>p.kmTotal===null).length;
   const btn=document.getElementById('nav-histo');
   const ex=btn.querySelector('.nav-badge');if(ex)ex.remove();
   if(n>0){const b=document.createElement('span');b.className='nav-badge';b.textContent=n;btn.appendChild(b);}
