@@ -26,7 +26,7 @@ STORAGE="${STORAGE:-local-lvm}"
 BRIDGE="${BRIDGE:-vmbr0}"
 PANEL_PORT="${PANEL_PORT:-3000}"
 REPO_URL="${REPO_URL:-https://github.com/SuperNon0/fuellog.git}"
-BRANCH="${BRANCH:-claude/review-project-structure-BvFkQ}"
+BRANCH="${BRANCH:-main}"
 
 YW=$'\033[33m'; GN=$'\033[1;92m'; RD=$'\033[01;31m'; CL=$'\033[m'
 info() { echo -e " ${YW}➤${CL} $1"; }

@@ -47,7 +47,7 @@ Application web progressive (PWA) de suivi de carburant et d'entretien pour un o
 | Upload / PDF | multer + pdf-lib |
 | Front-end | HTML / CSS / JS vanilla (hors-ligne, sans CDN) |
 | Carte / graphiques | Leaflet.js + Chart.js (hébergés localement) |
-| Connexion | Mot de passe unique + auto-login Cloudflare Access |
+| Connexion | Protection par mot de passe optionnelle (ouvert par défaut) |
 | Process manager | systemd (socle) ou PM2 |
 
 ## Installation
@@ -57,7 +57,7 @@ Application web progressive (PWA) de suivi de carburant et d'entretien pour un o
 Sur l'**hôte Proxmox**, colle cette commande : elle crée le conteneur LXC Debian 12, l'installe et le démarre entièrement.
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/claude/review-project-structure-BvFkQ/proxmox/fuellog-lxc.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/main/proxmox/fuellog-lxc.sh)"
 ```
 
 Personnalisable : `CTID=210 HOSTNAME=fuellog CORES=1 MEMORY=512 DISK=4 bash fuellog-lxc.sh`
@@ -67,7 +67,7 @@ Personnalisable : `CTID=210 HOSTNAME=fuellog CORES=1 MEMORY=512 DISK=4 bash fuel
 En **root**, dans le conteneur :
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/claude/review-project-structure-BvFkQ/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/main/install.sh)
 ```
 
 `install.sh` crée un **utilisateur dédié non-root** (`fuellog`), installe Node.js, un **service systemd**, un **sudoers minimal** (mise à jour en un clic) et démarre le tout. FuelLog est ensuite sur `http://<ip>:3000`.
@@ -80,7 +80,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/claude/rev
 ### Option C — PM2 (alternative)
 
 ```bash
-git clone -b claude/review-project-structure-BvFkQ https://github.com/SuperNon0/fuellog.git /opt/fuellog
+git clone -b main https://github.com/SuperNon0/fuellog.git /opt/fuellog
 cd /opt/fuellog && npm install --omit=dev
 pm2 start ecosystem.config.js && pm2 save && pm2 startup
 ```

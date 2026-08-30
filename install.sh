@@ -17,7 +17,7 @@ APP_USER="${APP_USER:-fuellog}"
 SERVICE="${SERVICE:-fuellog}"
 PORT="${PORT:-3000}"
 REPO_URL="${REPO_URL:-https://github.com/SuperNon0/fuellog.git}"
-BRANCH="${BRANCH:-claude/review-project-structure-BvFkQ}"
+BRANCH="${BRANCH:-main}"
 NODE_MAJOR="${NODE_MAJOR:-20}"
 
 log() { echo -e "\033[1;33m[FuelLog]\033[0m $*"; }
