@@ -372,3 +372,9 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 
 /* iOS : empêcher le zoom automatique au focus d'un champ (police >= 16px) */
 input, select, textarea { font-size: 16px !important; }
+
+/* Case Plein / Ajout dans les formulaires */
+.plein-toggle{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--text);cursor:pointer;margin:.9rem 0 .2rem;padding:.6rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+.plein-toggle input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.plein-toggle span{color:var(--muted);font-size:.68rem}
+.tag-ajout{background:rgba(107,111,122,.18);color:var(--muted)}

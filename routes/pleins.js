@@ -12,8 +12,8 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const p = req.body;
   const id = Date.now();
-  db.prepare(`INSERT INTO pleins (id,date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station,vehicule_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(id, p.date, p.type, p.kmDepart, p.kmTotal??null, p.estimPlein??null, p.estimRestante??null, p.total??0, p.litres??0, p.prixL??0, p.station??'', p.vehicule_id??null);
+  db.prepare(`INSERT INTO pleins (id,date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station,vehicule_id,estPlein) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(id, p.date, p.type, p.kmDepart, p.kmTotal??null, p.estimPlein??null, p.estimRestante??null, p.total??0, p.litres??0, p.prixL??0, p.station??'', p.vehicule_id??null, p.estPlein??1);
   res.json({ id });
 });
 
@@ -25,8 +25,8 @@ router.patch('/:id', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const p = req.body;
-  db.prepare(`UPDATE pleins SET date=?,type=?,kmDepart=?,kmTotal=?,estimPlein=?,estimRestante=?,total=?,litres=?,prixL=?,station=? WHERE id=?`)
-    .run(p.date, p.type, p.kmDepart, p.kmTotal??null, p.estimPlein??null, p.estimRestante??null, p.total??0, p.litres??0, p.prixL??0, p.station??'', req.params.id);
+  db.prepare(`UPDATE pleins SET date=?,type=?,kmDepart=?,kmTotal=?,estimPlein=?,estimRestante=?,total=?,litres=?,prixL=?,station=?,estPlein=? WHERE id=?`)
+    .run(p.date, p.type, p.kmDepart, p.kmTotal??null, p.estimPlein??null, p.estimRestante??null, p.total??0, p.litres??0, p.prixL??0, p.station??'', p.estPlein??1, req.params.id);
   res.json({ ok: true });
 });
 

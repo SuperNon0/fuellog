@@ -5,6 +5,7 @@ let openId=null,editId=null;
 function fd(d){const[y,m,j]=d.split('-');return`${j}/${m}/${y}`}
 function labelType(t){return t==='SP95'?'SP95/E10':t;}
 function kmParcourus(p){return(p.kmTotal!=null&&p.kmDepart!=null)?p.kmTotal-p.kmDepart:null}
+function estUnPlein(p){return p.estPlein!==0;}
 function precision(p){
   if(p.kmTotal==null||p.estimRestante==null||!p.estimPlein||!p.kmDepart)return null;
   const k=kmParcourus(p);if(!k||k<=0)return null;
@@ -55,8 +56,8 @@ function refreshAll(){
 
 // ---- HISTORIQUE (page d'accueil) ----
 function renderHistorique(){
-  // Banner Phase 1
-  const openPleins=data.filter(p=>p.kmTotal===null);
+  // Banner Phase 1 : uniquement les vrais pleins en attente (pas les ajouts)
+  const openPleins=data.filter(p=>p.kmTotal===null&&estUnPlein(p));
   const banner=document.getElementById('phase1-banner');
   if(openPleins.length){
     const p=openPleins[openPleins.length-1];
@@ -74,10 +75,10 @@ function renderHistorique(){
     banner.style.display='none';
   }
 
-  // Lignes historique (pleins complets uniquement, du plus récent)
-  const complets=[...data.filter(p=>p.kmTotal!==null)].reverse();
+  // Lignes historique : pleins complets + tous les ajouts (du plus récent)
+  const complets=[...data.filter(p=>p.kmTotal!==null||!estUnPlein(p))].reverse();
   const rows=document.getElementById('histo-rows');
-  if(!complets.length){rows.innerHTML='<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">⛽ Aucun plein complet pour l\'instant.</div>';return;}
+  if(!complets.length){rows.innerHTML='<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">⛽ Aucune entrée pour l\'instant.</div>';return;}
   rows.innerHTML=complets.map((p,i)=>{
     const km=kmParcourus(p);
     const pr=precision(p);
@@ -86,7 +87,7 @@ function renderHistorique(){
       <div class="histo-main">
         <div class="histo-left">
           <div class="histo-date">${fd(p.date)}</div>
-          <span class="tag tag-${p.type}">${labelType(p.type)}</span>
+          <span class="tag tag-${p.type}">${labelType(p.type)}</span>${!estUnPlein(p)?'<span class="tag tag-ajout">Ajout</span>':''}
           <div class="histo-resume">
             <span class="histo-km">${km?km.toLocaleString('fr-FR')+' km':'—'}</span>
             ${pct!==null?`<span class="prec-badge ${precClass(pct)}">${pct}%</span>`:''}
@@ -147,7 +148,7 @@ function toggleDelConfirm(id){
 
 // ---- BADGE NAV ----
 function updateBadge(){
-  const n=data.filter(p=>p.kmTotal===null).length;
+  const n=data.filter(p=>p.kmTotal===null&&estUnPlein(p)).length;
   const btn=document.getElementById('nav-histo');
   const ex=btn.querySelector('.nav-badge');if(ex)ex.remove();
   if(n>0){const b=document.createElement('span');b.className='nav-badge';b.textContent=n;btn.appendChild(b);}
@@ -220,11 +221,12 @@ async function ajouterPhase1(){
     kmDepart=parseInt(document.getElementById('f-km-depart').value);
     if(isNaN(kmDepart)){toast('Renseigne le kilométrage de départ.',true);return;}
   }
-  await addPlein({date,type,kmDepart,kmTotal:null,estimPlein:estim,estimRestante:null,total,litres,prixL,station,vehicule_id:currentVehicleId});
+  const estPlein=document.getElementById('f-est-plein').checked?1:0;
+  await addPlein({date,type,kmDepart,kmTotal:null,estimPlein:estim,estimRestante:null,total,litres,prixL,station,vehicule_id:currentVehicleId,estPlein});
   await loadData();
   clearForm();
   document.getElementById('modal-saisie').classList.remove('open');
-  toast('Plein enregistré ⏳');
+  toast(estPlein?'Plein enregistré ⏳':'Ajout enregistré ✓');
 }
 
 // ---- PHASE 2 ----
@@ -266,6 +268,7 @@ function ouvrirEdit(id){
   document.getElementById('e-litres').value=p.litres>0?p.litres:'';
   document.getElementById('e-prixL').value=p.prixL>0?p.prixL:'';
   document.getElementById('e-station').value=p.station??'';
+  document.getElementById('e-est-plein').checked=estUnPlein(p);
   document.getElementById('modal-edit').classList.add('open');
 }
 function closeModalEdit(e){if(e&&e.target!==document.getElementById('modal-edit'))return;document.getElementById('modal-edit').classList.remove('open');editId=null;}
@@ -288,8 +291,9 @@ async function validerEdit(){
   const litres=parseFloat(document.getElementById('e-litres').value)||0;
   const prixL=parseFloat(document.getElementById('e-prixL').value)||0;
   const station=document.getElementById('e-station').value.trim();
+  const estPlein=document.getElementById('e-est-plein').checked?1:0;
   if(!date){toast('Renseigne la date.',true);return;}
-  await updatePlein(editId,{date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station});
+  await updatePlein(editId,{date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station,estPlein});
   document.getElementById('modal-edit').classList.remove('open');editId=null;
   await loadData();toast('Plein modifié ✓');
 }
@@ -310,11 +314,11 @@ function updateMiniStats(){
   const complets=data.filter(p=>p.kmTotal!==null);
   const avecPrix=data.filter(p=>p.prixL>0);
   document.getElementById('s-prixL').textContent=avecPrix.length?avecPrix[avecPrix.length-1].prixL.toFixed(3):'—';
-  const avecKm=complets.filter(p=>kmParcourus(p)!=null);
-  if(avecKm.length){
-    document.getElementById('s-km-moy').textContent=Math.round(avecKm.reduce((s,p)=>s+kmParcourus(p),0)/avecKm.length);
-    document.getElementById('s-dep-moy').textContent=(dep/data.length).toFixed(2);
-  }else{document.getElementById('s-km-moy').textContent='—';document.getElementById('s-dep-moy').textContent='—';}
+  // Moyennes « par plein » : on ne compte que les vrais pleins (pas les ajouts)
+  const pleins=data.filter(estUnPlein);
+  const avecKm=complets.filter(p=>kmParcourus(p)!=null&&estUnPlein(p));
+  document.getElementById('s-km-moy').textContent=avecKm.length?Math.round(avecKm.reduce((s,p)=>s+kmParcourus(p),0)/avecKm.length):'—';
+  document.getElementById('s-dep-moy').textContent=pleins.length?(pleins.reduce((s,p)=>s+p.total,0)/pleins.length).toFixed(2):'—';
   const precVals=complets.map(p=>precision(p)).filter(v=>v&&v>0&&v<3);
   document.getElementById('s-prec').textContent=precVals.length?Math.round(precVals.reduce((a,b)=>a+b,0)/precVals.length*100)+'%':'—';
 }
@@ -347,7 +351,7 @@ function renderStats(){
   const coutVals=complets.filter(p=>coutKm(p)!==null).map(p=>coutKm(p));
   document.getElementById('st-conso').textContent=consoVals.length?(consoVals.reduce((a,b)=>a+b,0)/consoVals.length).toFixed(1):'—';
   document.getElementById('st-cout').textContent=coutVals.length?(coutVals.reduce((a,b)=>a+b,0)/coutVals.length).toFixed(2):'—';
-  document.getElementById('st-jours').textContent=joursMoyen(fdata)||'—';
+  document.getElementById('st-jours').textContent=joursMoyen(fdata.filter(estUnPlein))||'—';
   const proj=coutAnnuelProjecte(fdata);
   document.getElementById('st-proj').textContent=proj?proj.toLocaleString('fr-FR'):'—';
   renderChartDepense(fdata);renderChartPrix(fdata);renderChartKm(complets);renderChartConso(complets);renderChartMensuel(fdata);
@@ -360,6 +364,7 @@ function clearForm(){
   document.getElementById('f-station-select').value='';
   document.getElementById('f-station-manual').style.display='none';
   document.getElementById('prix-confirm').style.display='none';
+  document.getElementById('f-est-plein').checked=true;
 }
 
 // ---- INIT ----

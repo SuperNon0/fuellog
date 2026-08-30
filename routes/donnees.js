@@ -27,12 +27,12 @@ router.get('/csv/pleins', (req, res) => {
   const pleins = req.query.vehicule
     ? db.prepare('SELECT * FROM pleins WHERE vehicule_id=? ORDER BY date ASC, id ASC').all(req.query.vehicule)
     : db.prepare('SELECT * FROM pleins ORDER BY date ASC, id ASC').all();
-  const headers = ['Date', 'Carburant', 'Km départ', 'Km total', 'Km parcourus', 'ODB annoncé (km)', 'ODB restant (km)', 'Total (€)', 'Litres', 'Prix/L (€)', 'Conso (L/100km)', 'Station'];
+  const headers = ['Date', 'Type entrée', 'Carburant', 'Km départ', 'Km total', 'Km parcourus', 'ODB annoncé (km)', 'ODB restant (km)', 'Total (€)', 'Litres', 'Prix/L (€)', 'Conso (L/100km)', 'Station'];
   const rows = pleins.map(p => {
     const km = (p.kmTotal != null && p.kmDepart != null) ? p.kmTotal - p.kmDepart : null;
     const conso = (p.litres > 0 && km > 0) ? (p.litres / km * 100).toFixed(2) : '';
     const nb = v => v == null ? '' : String(v).replace('.', ',');
-    return [p.date, p.type, p.kmDepart, p.kmTotal, km, p.estimPlein, p.estimRestante, nb(p.total), nb(p.litres), nb(p.prixL), nb(conso).replace('.', ','), p.station];
+    return [p.date, p.estPlein === 0 ? 'Ajout' : 'Plein', p.type, p.kmDepart, p.kmTotal, km, p.estimPlein, p.estimRestante, nb(p.total), nb(p.litres), nb(p.prixL), nb(conso).replace('.', ','), p.station];
   });
   sendCSV(res, 'pleins.csv', toCSV(headers, rows));
 });
@@ -86,8 +86,8 @@ router.post('/import', (req, res) => {
       const insT = db.prepare('INSERT OR IGNORE INTO types_entretien (id,nom) VALUES (?,?)');
       (b.types_entretien || []).forEach(t => insT.run(t.id, t.nom));
 
-      const insP = db.prepare('INSERT INTO pleins (id,date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station,vehicule_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
-      b.pleins.forEach(p => insP.run(p.id, p.date, p.type, p.kmDepart ?? null, p.kmTotal ?? null, p.estimPlein ?? null, p.estimRestante ?? null, p.total ?? 0, p.litres ?? 0, p.prixL ?? 0, p.station ?? '', p.vehicule_id ?? null));
+      const insP = db.prepare('INSERT INTO pleins (id,date,type,kmDepart,kmTotal,estimPlein,estimRestante,total,litres,prixL,station,vehicule_id,estPlein) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
+      b.pleins.forEach(p => insP.run(p.id, p.date, p.type, p.kmDepart ?? null, p.kmTotal ?? null, p.estimPlein ?? null, p.estimRestante ?? null, p.total ?? 0, p.litres ?? 0, p.prixL ?? 0, p.station ?? '', p.vehicule_id ?? null, p.estPlein ?? 1));
 
       const insE = db.prepare('INSERT INTO entretiens (id,date,km,categorie,commentaire,cout,created_at,vehicule_id) VALUES (?,?,?,?,?,?,?,?)');
       (b.entretiens || []).forEach(e => insE.run(e.id, e.date, e.km ?? null, e.categorie ?? '', e.commentaire ?? '', e.cout ?? 0, e.created_at ?? null, e.vehicule_id ?? null));

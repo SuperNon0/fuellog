@@ -69,6 +69,9 @@ try { db.exec('ALTER TABLE favoris ADD COLUMN prix_json TEXT DEFAULT "{}"'); } c
 try { db.exec('ALTER TABLE pleins ADD COLUMN vehicule_id INTEGER'); } catch(e) {}
 try { db.exec('ALTER TABLE entretiens ADD COLUMN vehicule_id INTEGER'); } catch(e) {}
 
+// Migration : distinguer plein complet (1) et ajout partiel (0). Défaut = plein.
+try { db.exec('ALTER TABLE pleins ADD COLUMN estPlein INTEGER DEFAULT 1'); } catch(e) {}
+
 // Créer un véhicule par défaut si aucun, et y rattacher les données existantes
 const vcount = db.prepare('SELECT COUNT(*) AS n FROM vehicules').get();
 if (vcount.n === 0) {
