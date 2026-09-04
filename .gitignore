@@ -34,3 +34,12 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# --- Modèle en couches ---
+# Fondation non versionnée dans le projet (fournie par sync_base)
+base/
+.venv/
+__pycache__/
+*.pyc
+# Base SQLite + uploads runtime
+data/
