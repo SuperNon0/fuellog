@@ -378,3 +378,20 @@ input, select, textarea { font-size: 16px !important; }
 .plein-toggle input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
 .plein-toggle span{color:var(--muted);font-size:.68rem}
 .tag-ajout{background:rgba(107,111,122,.18);color:var(--muted)}
+
+/* ==== Sous-barre FuelLog (véhicule + total + accès base) ==== */
+.fuel-subbar{
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+  flex-wrap:wrap;
+  padding:.7rem 1rem;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.fuel-subbar .header-left{display:flex;align-items:center;gap:.6rem;min-width:0}
+.fuel-subbar .header-stat{text-align:right;white-space:nowrap;line-height:1.1}
+.fuel-links{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.fuel-links .btn.small{font-size:.62rem;padding:.35rem .7rem}
+@media(max-width:560px){
+  .fuel-subbar{padding:.6rem .8rem}
+  .fuel-links .btn.small{padding:.3rem .55rem}
+}
