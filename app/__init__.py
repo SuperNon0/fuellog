@@ -13,4 +13,5 @@ from __future__ import annotations
 def register(flask_app) -> None:
     from .routes import bp
     flask_app.register_blueprint(bp)
-    flask_app.config["APP_REGLAGES_TEMPLATE"] = "app_reglages.html"
+    # Pas de page /reglages séparée : tous les réglages de l'app sont regroupés
+    # dans l'onglet « Gestion » (la base masque alors son lien « Réglages »).

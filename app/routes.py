@@ -110,8 +110,8 @@ def uploads(filename):
 def reglages_enregistrer():
     set_setting("app_carburant", (request.form.get("app_carburant") or "E10").strip())
     from flask import flash
-    flash("Réglages de l'application enregistrés.", "success")
-    return redirect(url_for("accounts.reglages"))
+    flash("Réglage enregistré.", "success")
+    return redirect(url_for("app.dashboard"))
 
 
 # ─────────────────────────── PLEINS ─────────────────────────────────────────

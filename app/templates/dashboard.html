@@ -26,7 +26,6 @@
   <div style="display:flex;align-items:center;gap:.8rem">
     <div class="header-stat"><strong id="h-total">—</strong><small>dépensé au total</small></div>
     <div class="fuel-links">
-      <a class="btn ghost small" href="{{ url_for('accounts.reglages') }}">Réglages</a>
       {% if any_admin_capability() %}<a class="btn ghost small" href="{{ url_for('accounts.parametres') }}">Paramètres</a>{% endif %}
       <a class="btn ghost small" href="{{ url_for('auth.logout') }}">Déconnexion</a>
     </div>
@@ -216,8 +215,21 @@
     </div>
   </div>
 
-  <!-- GESTION (véhicules, types, données) -->
+  <!-- GESTION (réglages, véhicules, types, données) -->
   <div id="tab-parametres" class="tab">
+    <div class="param-section">
+      <h2 class="param-title">⚙️ Réglages</h2>
+      <form method="post" action="{{ url_for('app.reglages_enregistrer') }}" class="param-add-row" style="align-items:center">
+        <label class="param-desc" for="app_carburant" style="margin:0;flex:1">Carburant présélectionné à la saisie d'un plein</label>
+        <select id="app_carburant" name="app_carburant">
+          {% for c in ["E10", "SP95", "SP98", "Diesel", "E85"] %}
+          <option value="{{ c }}" {{ "selected" if app_carburant == c else "" }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">✓</button>
+      </form>
+    </div>
+
     <div class="param-section">
       <div class="param-head">
         <h2 class="param-title">🚗 Mes véhicules</h2>
