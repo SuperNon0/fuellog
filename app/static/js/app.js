@@ -13,8 +13,11 @@ function precision(p){
 }
 function precisionColor(v){if(!v)return'var(--muted)';const p=Math.round(v*100);return p>=95?'var(--accent2)':p>=85?'var(--accent)':'var(--accent3)'}
 function precClass(p){return p>=95?'prec-green':p>=85?'prec-yellow':'prec-orange'}
-function conso(p){if(!p.litres||p.litres<=0)return null;const km=kmParcourus(p);if(!km||km<=0)return null;return(p.litres/km)*100;}
-function coutKm(p){const km=kmParcourus(p);if(!km||km<=0||!p.total)return null;return(p.total/km)*100;}
+// Conso / coût au 100 : uniquement pour un vrai plein (un ajout partiel fausserait le calcul)
+function conso(p){if(!estUnPlein(p))return null;if(!p.litres||p.litres<=0)return null;const km=kmParcourus(p);if(!km||km<=0)return null;return(p.litres/km)*100;}
+function coutKm(p){if(!estUnPlein(p))return null;const km=kmParcourus(p);if(!km||km<=0||!p.total)return null;return(p.total/km)*100;}
+// Autonomie réelle observée du plein : distance parcourue + ce que l'ODB annonçait comme restant
+function autonomieReelle(p){const k=kmParcourus(p);if(k==null||k<=0||p.estimRestante==null)return null;return k+p.estimRestante;}
 function litresPlein(p){if(p.litres>0)return p.litres;if(p.total>0&&p.prixL>0)return p.total/p.prixL;return null;}
 function consoMoyenne(){const vals=data.filter(p=>p.kmTotal!==null).map(p=>conso(p)).filter(v=>v!=null);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;}
 function autonomie(p){const l=litresPlein(p);const cm=consoMoyenne();if(!l||!cm)return null;return l/cm*100;}
@@ -117,6 +120,7 @@ function renderHistorique(){
           <div><div class="detail-label">Conso.</div><div class="detail-val">${conso(p)!==null?conso(p).toFixed(1)+' L/100':'—'}</div></div>
           <div><div class="detail-label">Coût/100km</div><div class="detail-val">${coutKm(p)!==null?coutKm(p).toFixed(2)+' €':'—'}</div></div>
           <div><div class="detail-label">Autonomie estimée</div><div class="detail-val">${autonomie(p)!==null?Math.round(autonomie(p)).toLocaleString('fr-FR')+' km':'—'}</div></div>
+          <div><div class="detail-label">Autonomie réelle (km + ODB restant)</div><div class="detail-val">${autonomieReelle(p)!==null?autonomieReelle(p).toLocaleString('fr-FR')+' km':'—'}</div></div>
           <div><div class="detail-label">Type</div><div class="detail-val">${labelType(p.type)}</div></div>
         </div>
         <div class="detail-actions">
