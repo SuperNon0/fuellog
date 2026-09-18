@@ -13,6 +13,30 @@
   .modal-overlay { z-index: 500 !important; }
   .fab { z-index: 400 !important; }
   .toast { z-index: 600 !important; }
+
+  /* Accès & sécurité (Cloudflare + mot de passe) */
+  .secu-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;margin-top:.6rem}
+  .secu-h{font-family:'DM Serif Display',serif;font-size:.95rem;color:var(--text);margin:0 0 .7rem}
+  .secu-form{display:flex;flex-direction:column;gap:.55rem}
+  .secu-label{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .secu-form input[type=text],.secu-form input[type=password]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.85rem;padding:.7rem .8rem}
+  .secu-form input:focus{outline:none;border-color:var(--accent)}
+  .secu-check{display:flex;align-items:center;gap:.5rem;font-size:.72rem;color:var(--text);margin-top:.2rem}
+  .secu-check input{width:auto}
+  .secu-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.3rem}
+  .secu-actions .param-data-btn{width:auto}
+  .secu-actions .btn-primary{flex:0 0 auto}
+  .secu-result{margin-top:.4rem;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .secu-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.6rem .8rem;border-bottom:1px solid var(--border);font-size:.75rem}
+  .secu-row:last-child{border-bottom:none}
+  .secu-row>span:first-child{color:var(--text)}
+  .secu-val{color:var(--muted);font-family:'DM Mono',monospace;font-size:.7rem;text-align:right;word-break:break-all}
+  .secu-badge{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .5rem;border-radius:20px;border:1px solid}
+  .secu-badge.ok{color:var(--accent2);border-color:var(--accent2)}
+  .secu-badge.no{color:var(--danger);border-color:var(--danger)}
+  .secu-badge.mid{color:var(--muted);border-color:var(--border)}
+  .secu-note{margin:.7rem 0 0}
+  .secu-note code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:.1rem .35rem;font-size:.68rem}
 </style>
 {% endblock %}
 
@@ -266,6 +290,108 @@
         <input type="file" id="import-file-input" accept="application/json,.json" style="display:none" onchange="importerBackup(this)">
       </div>
     </div>
+
+    {% if secu %}
+    <!-- ACCÈS & SÉCURITÉ (super-admin) : Cloudflare Access + mot de passe local.
+         La vérification du jeton réutilise le noyau testé du socle. -->
+    <div class="param-section" id="secu-section">
+      <h2 class="param-title">🔐 Accès &amp; sécurité</h2>
+      <p class="param-desc">Cloudflare Access fait le portier (qui peut ouvrir), le mot de passe local est le secours si Cloudflare tombe. Le jeton est vérifié par le noyau du socle (JWT signé, jamais l'en-tête seul).</p>
+
+      <!-- Cloudflare / Accès -->
+      <div class="secu-card">
+        <h3 class="secu-h">Cloudflare / Accès</h3>
+        <form id="cf-form" method="post" action="{{ url_for('app.reglages_cloudflare') }}" class="secu-form">
+          <div>
+            <label class="secu-label" for="cf-team">Équipe (nom seul, ex. super-nono)</label>
+            <input id="cf-team" type="text" name="team" value="{{ cf.team }}" placeholder="super-nono" style="margin-top:.35rem">
+          </div>
+          <div>
+            <label class="secu-label" for="cf-aud">AUD (Application Audience tag)</label>
+            <input id="cf-aud" type="text" name="aud" value="{{ cf.aud }}" style="margin-top:.35rem">
+          </div>
+          <label class="secu-check"><input type="checkbox" name="verify" value="1" {{ 'checked' if cf.verify }}> Vérifier le JWT Cloudflare (recommandé en production)</label>
+          <div class="secu-actions">
+            <button type="button" id="cf-test" class="param-data-btn">Tester</button>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+
+        <div class="secu-label" style="margin-top:1rem">Résultat du test</div>
+        <div class="secu-result" id="cf-result">
+          <div class="secu-row"><span>Jeton Cloudflare reçu</span><span class="secu-badge {{ 'ok' if cf_diag.has_token else 'no' }}">{{ 'oui' if cf_diag.has_token else 'non' }}</span></div>
+          <div class="secu-row"><span>En-tête e-mail</span><span class="secu-val">{{ cf_diag.header_email or '—' }}</span></div>
+          <div class="secu-row"><span>Équipe / AUD</span><span class="secu-val">{{ cf_diag.team or '—' }} / {{ cf_diag.aud or '—' }}</span></div>
+          <div class="secu-row"><span>Vérification JWT</span><span class="secu-badge {{ 'ok' if cf_diag.jwt_status.startswith('OK') else ('no' if cf_diag.jwt_status.startswith('échec') else 'mid') }}">{{ cf_diag.jwt_status }}</span></div>
+          {% if cf_diag.jwt_email %}<div class="secu-row"><span>E-mail du jeton</span><span class="secu-val">{{ cf_diag.jwt_email }}</span></div>{% endif %}
+          {% if cf_diag.jwt_error %}<div class="secu-row"><span>Détail</span><span class="secu-val">{{ cf_diag.jwt_error }}</span></div>{% endif %}
+        </div>
+        <p class="param-desc secu-note">« non testé » = pas de jeton (l'origine n'est peut-être pas derrière Access). Erreur « …cloudflareaccess.com.cloudflareaccess.com » → mets le <b>nom seul</b> dans Équipe. Erreur « audience » → l'AUD ne correspond pas à l'app Access.</p>
+      </div>
+
+      <!-- Mot de passe local -->
+      <div class="secu-card">
+        <h3 class="secu-h">Mot de passe local (secours)</h3>
+        <form method="post" action="{{ url_for('app.reglages_mot_de_passe') }}" class="secu-form">
+          {% if has_password %}
+          <div>
+            <label class="secu-label" for="mdp-actuel">Mot de passe actuel</label>
+            <input id="mdp-actuel" type="password" name="actuel" autocomplete="current-password" style="margin-top:.35rem" required>
+          </div>
+          {% else %}
+          <p class="param-desc" style="margin:0">Aucun mot de passe local défini — choisis-en un ci-dessous.</p>
+          {% endif %}
+          <div>
+            <label class="secu-label" for="mdp-nouveau">Nouveau mot de passe</label>
+            <input id="mdp-nouveau" type="password" name="nouveau" autocomplete="new-password" minlength="8" style="margin-top:.35rem" required>
+          </div>
+          <div>
+            <label class="secu-label" for="mdp-confirme">Confirmer</label>
+            <input id="mdp-confirme" type="password" name="confirme" autocomplete="new-password" minlength="8" style="margin-top:.35rem" required>
+          </div>
+          <div class="secu-actions">
+            <button type="submit" class="btn-primary">Mettre à jour</button>
+          </div>
+        </form>
+        <p class="param-desc secu-note">Mot de passe oublié ? Il ne se réinitialise pas depuis le web (sécurité). Sur le serveur : <code>sudo bash deploy/reset_admin.sh</code></p>
+      </div>
+    </div>
+
+    <script>
+    (function () {
+      var btn = document.getElementById("cf-test");
+      if (!btn) return;
+      var result = document.getElementById("cf-result");
+      function esc(s){ var d=document.createElement("div"); d.textContent=(s==null?"":String(s)); return d.innerHTML; }
+      function row(label, valueHtml){ return '<div class="secu-row"><span>'+label+'</span>'+valueHtml+'</div>'; }
+      function badge(cls, txt){ return '<span class="secu-badge '+cls+'">'+esc(txt)+'</span>'; }
+      function val(v){ return '<span class="secu-val">'+esc(v||"—")+'</span>'; }
+      function render(d){
+        var jwtCls = d.jwt_status && d.jwt_status.indexOf("OK")===0 ? "ok"
+                   : (d.jwt_status && d.jwt_status.indexOf("échec")===0 ? "no" : "mid");
+        var h = "";
+        h += row("Jeton Cloudflare reçu", badge(d.has_token?"ok":"no", d.has_token?"oui":"non"));
+        h += row("En-tête e-mail", val(d.header_email));
+        h += row("Équipe / AUD", val((d.team||"—")+" / "+(d.aud||"—")));
+        h += row("Vérification JWT", badge(jwtCls, d.jwt_status));
+        if (d.jwt_email) h += row("E-mail du jeton", val(d.jwt_email));
+        if (d.jwt_error) h += row("Détail", val(d.jwt_error));
+        result.innerHTML = h;
+      }
+      btn.addEventListener("click", function () {
+        btn.disabled = true; var old = btn.textContent; btn.textContent = "Test…";
+        fetch("{{ url_for('app.cf_test') }}", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ team: document.getElementById("cf-team").value,
+                                 aud: document.getElementById("cf-aud").value })
+        }).then(function(r){ return r.json(); })
+          .then(function(d){ if (d.error) { result.innerHTML = '<div class="secu-row"><span>'+esc(d.error)+'</span></div>'; } else { render(d); } })
+          .catch(function(e){ result.innerHTML = '<div class="secu-row"><span>Erreur : '+esc(e)+'</span></div>'; })
+          .finally(function(){ btn.disabled = false; btn.textContent = old; });
+      });
+    })();
+    </script>
+    {% endif %}
   </div>
 
 </main>
@@ -466,4 +592,13 @@
 <script src="{{ url_for('app.static', filename='js/entretien.js') }}"></script>
 <script src="{{ url_for('app.static', filename='js/estimation.js') }}"></script>
 <script src="{{ url_for('app.static', filename='js/app.js') }}"></script>
+<script>
+  // Après un enregistrement Accès & sécurité, on rouvre l'onglet Gestion.
+  window.addEventListener('load', function () {
+    if (location.hash === '#gestion') {
+      var b = document.querySelector('nav button[onclick*="parametres"]');
+      if (b) showTab('parametres', b);
+    }
+  });
+</script>
 {% endblock %}

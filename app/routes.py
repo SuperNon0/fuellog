@@ -17,9 +17,10 @@ import uuid
 from flask import (Blueprint, current_app, jsonify, redirect, render_template,
                    request, send_from_directory, url_for)
 
-from panel.auth import current_compte, login_required
+from panel.auth import (cf_diagnostic, current_compte, get_compte,
+                        is_super_admin, login_required)
 from panel.db import get_db
-from panel.settings import get_setting, set_setting
+from panel.settings import cf_config, get_setting, normalize_team, set_setting
 
 bp = Blueprint("app", __name__, static_folder="static",
                static_url_path="/app-static", template_folder="templates")
@@ -96,7 +97,18 @@ def _reglages_ctx():
 @login_required
 def dashboard():
     ensure_seed(cid())
-    return render_template("dashboard.html", compte=current_compte())
+    # Bloc « Accès & sécurité » (onglet Gestion) : réservé au super-admin.
+    secu = is_super_admin()
+    cf = cf_diag = None
+    has_password = False
+    if secu:
+        from flask import session
+        cf = cf_config()
+        cf_diag = cf_diagnostic()
+        moi = get_compte(session.get("impersonator_id") or session.get("compte_id"))
+        has_password = bool(moi and moi["mdp_hash"])
+    return render_template("dashboard.html", compte=current_compte(),
+                           secu=secu, cf=cf, cf_diag=cf_diag, has_password=has_password)
 
 
 @bp.route("/uploads/<path:filename>")
@@ -112,6 +124,88 @@ def reglages_enregistrer():
     from flask import flash
     flash("Réglage enregistré.", "success")
     return redirect(url_for("app.dashboard"))
+
+
+# ─────────────────────────── ACCÈS & SÉCURITÉ ───────────────────────────────
+# Écran natif « Accès & sécurité » (onglet Gestion) : configuration Cloudflare
+# Access + mot de passe local. On RÉUTILISE le noyau testé de la base — jamais
+# on ne réécrit la vérification JWT ni le hachage. Ces routes ne font que lire
+# les valeurs saisies, appeler les fonctions de la base, puis revenir sur
+# l'écran FuelLog (au lieu de la page /parametres générique de la base).
+
+def _secu_gate():
+    """Réservé au super-admin ; interdit pendant une impersonation."""
+    from flask import session
+    if not is_super_admin():
+        return "Réservé au super-admin.", 403
+    if session.get("impersonator_id"):
+        return "Reviens à ton compte d'abord.", 403
+    return None
+
+
+@bp.route("/api/secu/cf-test", methods=["POST"])
+@api_login_required
+def cf_test():
+    """Bouton « Tester » : diagnostic en direct des valeurs saisies (sans enregistrer).
+
+    Chemin distinct de la route base `/api/cf-test` (accounts.cf_test) pour éviter
+    toute collision d'URL ; la logique s'appuie sur le même noyau `cf_diagnostic`.
+    """
+    err = _secu_gate()
+    if err:
+        return jsonify({"error": err[0]}), err[1]
+    d = request.get_json(silent=True) or {}
+    team = normalize_team(d.get("team", ""))
+    aud = (d.get("aud", "") or "").strip()
+    return jsonify(cf_diagnostic(team=team, aud=aud))
+
+
+@bp.route("/reglages/cloudflare", methods=["POST"])
+@login_required
+def reglages_cloudflare():
+    """Enregistre la config Cloudflare (équipe/AUD/vérif) dans le store de la base."""
+    from flask import flash, session
+    if not is_super_admin() or session.get("impersonator_id"):
+        flash("Réservé au super-admin.", "error")
+        return redirect(url_for("app.dashboard") + "#gestion")
+    set_setting("cf_team", normalize_team(request.form.get("team", "")))
+    set_setting("cf_aud", (request.form.get("aud", "") or "").strip())
+    set_setting("cf_verify", "1" if request.form.get("verify") else "0")
+    flash("Configuration Cloudflare enregistrée.", "success")
+    return redirect(url_for("app.dashboard") + "#gestion")
+
+
+@bp.route("/reglages/mot-de-passe", methods=["POST"])
+@login_required
+def reglages_mot_de_passe():
+    """Change le mot de passe local (secours LAN). Réutilise le hachage werkzeug de la base."""
+    from flask import flash, session
+    from werkzeug.security import check_password_hash, generate_password_hash
+    if session.get("impersonator_id"):
+        flash("Reviens à ton compte avant de changer le mot de passe.", "error")
+        return redirect(url_for("app.dashboard") + "#gestion")
+    moi = get_compte(session.get("compte_id"))
+    if moi is None:
+        flash("Session expirée.", "error")
+        return redirect(url_for("app.dashboard"))
+    actuel = request.form.get("actuel", "")
+    nouveau = request.form.get("nouveau", "")
+    confirme = request.form.get("confirme", "")
+    if moi["mdp_hash"] and not check_password_hash(moi["mdp_hash"], actuel):
+        flash("Mot de passe actuel incorrect.", "error")
+        return redirect(url_for("app.dashboard") + "#gestion")
+    if len(nouveau) < 8:
+        flash("Le nouveau mot de passe doit faire au moins 8 caractères.", "error")
+        return redirect(url_for("app.dashboard") + "#gestion")
+    if nouveau != confirme:
+        flash("La confirmation ne correspond pas.", "error")
+        return redirect(url_for("app.dashboard") + "#gestion")
+    db = get_db()
+    db.execute("UPDATE comptes SET mdp_hash=? WHERE id=?",
+               (generate_password_hash(nouveau), moi["id"]))
+    db.commit()
+    flash("Mot de passe mis à jour.", "success")
+    return redirect(url_for("app.dashboard") + "#gestion")
 
 
 # ─────────────────────────── PLEINS ─────────────────────────────────────────
