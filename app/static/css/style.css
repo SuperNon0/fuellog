@@ -395,3 +395,90 @@ input, select, textarea { font-size: 16px !important; }
   .fuel-subbar{padding:.6rem .8rem}
   .fuel-links .btn.small{padding:.3rem .55rem}
 }
+
+/* ============================================================================
+   REFONTE RESPONSIVE + FINITIONS  (purement additif ; ne change pas le mobile)
+   - Colonne centrée sur grand écran (les barres restent pleine largeur)
+   - Grilles qui respirent (stats 4 col, graphes 2 col)
+   - Animations douces + halos au survol (souris uniquement)
+   ========================================================================== */
+:root{ --fl-max:1080px; }
+
+/* --- Colonne centrée : gouttières auto pour aligner tout le contenu --- */
+@media (min-width:900px){
+  header,
+  nav,
+  .fuel-subbar,
+  main{
+    padding-left:  max(1.4rem, calc((100% - var(--fl-max)) / 2));
+    padding-right: max(1.4rem, calc((100% - var(--fl-max)) / 2));
+  }
+  main{ padding-top:1.6rem; }
+  /* Un peu de profondeur sur les barres du haut */
+  header,.fuel-subbar{ background:linear-gradient(180deg, var(--surface), rgba(22,24,28,.72)); }
+}
+
+/* --- Les stats s'étalent au lieu de rester en 2 colonnes étirées --- */
+@media (min-width:760px){ .stats-grid{ grid-template-columns:repeat(3,1fr); } }
+@media (min-width:1024px){ .stats-grid{ grid-template-columns:repeat(4,1fr); } }
+
+/* --- Graphes côte à côte sur desktop (au lieu d'être immenses) --- */
+@media (min-width:1024px){
+  /* .active pour ne pas écraser le display:none des onglets inactifs */
+  #tab-stats.active{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:start; }
+  #tab-stats .stats-filter,
+  #tab-stats .stats-grid{ grid-column:1 / -1; }
+  #tab-stats .chart-card{ margin:0; }
+}
+
+/* --- Historique : lignes plus lisibles + surbrillance au survol --- */
+.histo-row{ border-radius:8px; transition:background .18s ease; padding-left:.4rem; padding-right:.4rem; }
+@media (hover:hover){ .histo-row:hover{ background:rgba(255,255,255,.025); } }
+
+/* ---------- Animations ---------- */
+@keyframes fl-fade-up{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+@keyframes fl-slide-down{ from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:none} }
+
+/* Apparition douce du contenu d'onglet */
+.tab.active{ animation:fl-fade-up .34s cubic-bezier(.22,.61,.36,1) both; }
+/* Messages flash qui glissent du haut */
+.flash{ animation:fl-slide-down .3s ease both; }
+
+/* Transitions générales sur les surfaces */
+.stat-card,.ent-card,.s-card,.chart-card,.card,.table-card,.param-section,.estim-card,.secu-card{
+  transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+/* Survol (souris uniquement) : légère élévation + halo */
+@media (hover:hover){
+  .stat-card:hover,.ent-card:hover,.s-card:hover,.estim-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(232,197,71,.32);
+    box-shadow:0 10px 26px rgba(0,0,0,.38);
+  }
+  .chart-card:hover,.param-section:hover,.secu-card:hover{
+    border-color:rgba(232,197,71,.22);
+    box-shadow:0 8px 22px rgba(0,0,0,.28);
+  }
+  nav button{ transition:color .2s, background .2s; }
+  nav button:hover:not(.active){ background:rgba(255,255,255,.03); }
+  .btn-primary,.btn-ok,.btn-confirm-ok,.btn-s-search,.btn-clear,.btn.primary{ transition:filter .2s, box-shadow .2s, transform .12s; }
+  .btn-primary:hover,.btn-ok:hover,.btn-confirm-ok:hover,.btn.primary:hover{ filter:brightness(1.07); box-shadow:0 6px 18px rgba(232,197,71,.22); }
+  .param-data-btn{ transition:border-color .2s, background .2s; }
+  .param-data-btn:hover{ border-color:rgba(232,197,71,.4); background:var(--card); }
+  .fab:hover{ box-shadow:0 8px 26px rgba(167,139,250,.5); }
+}
+
+/* Petit "press" tactile universel sur les boutons pleins */
+.btn-primary:active,.btn-ok:active,.btn-confirm-ok:active,.btn-s-search:active{ transform:translateY(1px); }
+
+/* Onglet actif : liseré lumineux */
+nav button.active{ box-shadow:inset 0 -2px 0 var(--accent), 0 6px 14px -10px var(--accent); }
+
+/* Gros chiffre du total : léger halo pour le faire ressortir */
+.header-stat strong{ text-shadow:0 0 22px rgba(232,197,71,.28); }
+
+/* Respecte les préférences d'accessibilité */
+@media (prefers-reduced-motion:reduce){
+  *{ animation:none !important; transition:none !important; }
+}

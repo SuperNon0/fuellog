@@ -3,6 +3,14 @@
 {% block badge %}suivi carburant & entretien{% endblock %}
 
 {% block head %}
+<!-- PWA / iPhone : icône d'accueil + appli plein écran (la base fournit déjà le
+     viewport anti-zoom et theme-color ; on ajoute seulement manifest + icônes). -->
+<link rel="manifest" href="{{ url_for('app.static', filename='manifest.webmanifest') }}">
+<link rel="apple-touch-icon" href="{{ url_for('app.static', filename='icons/apple-touch-icon.png') }}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FuelLog">
 <link rel="stylesheet" href="{{ url_for('app.static', filename='vendor/leaflet.css') }}">
 <link rel="stylesheet" href="{{ url_for('app.static', filename='css/style.css') }}">
 <style>
@@ -38,6 +46,17 @@
   .secu-note{margin:.7rem 0 0}
   .secu-note code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:.1rem .35rem;font-size:.68rem}
 </style>
+<script>
+  // Anti-zoom iPhone : le viewport (base) bloque déjà le zoom au focus des champs ;
+  // Safari ignore parfois user-scalable=no hors PWA → on neutralise le pinch en JS.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+  });
+  document.addEventListener('touchmove', function (e) {
+    if (e.scale && e.scale !== 1) e.preventDefault();   // uniquement le pinch, jamais le scroll
+  }, { passive: false });
+  // (Le double-tap zoom est déjà neutralisé par touch-action:manipulation côté CSS.)
+</script>
 {% endblock %}
 
 {% block content %}
