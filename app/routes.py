@@ -18,7 +18,7 @@ from flask import (Blueprint, current_app, jsonify, redirect, render_template,
                    request, send_from_directory, url_for)
 
 from panel.auth import (cf_diagnostic, current_compte, get_compte,
-                        is_super_admin, login_required)
+                        is_super_admin, local_login_enabled, login_required)
 from panel.db import get_db
 from panel.settings import cf_config, get_setting, normalize_team, set_setting
 
@@ -100,13 +100,15 @@ def dashboard():
     # Bloc « Accès & sécurité » (onglet Gestion) : réservé au super-admin.
     secu = is_super_admin()
     cf = cf_diag = None
-    has_password = False
+    has_password = allow_local = False
     if secu:
         cf = cf_config()
         cf_diag = cf_diagnostic()
         has_password = bool(get_setting("admin_mdp_hash"))
+        allow_local = local_login_enabled()
     return render_template("dashboard.html", compte=current_compte(),
-                           secu=secu, cf=cf, cf_diag=cf_diag, has_password=has_password)
+                           secu=secu, cf=cf, cf_diag=cf_diag,
+                           has_password=has_password, allow_local=allow_local)
 
 
 @bp.route("/uploads/<path:filename>")
@@ -165,6 +167,10 @@ def reglages_cloudflare():
     set_setting("cf_team", normalize_team(request.form.get("team", "")))
     set_setting("cf_aud", (request.form.get("aud", "") or "").strip())
     set_setting("cf_verify", "1" if request.form.get("verify") else "0")
+    # Accès local (case à cocher du même formulaire) : décoché = entrée Cloudflare
+    # uniquement. On enregistre l'état ; le secours reste récupérable côté serveur
+    # (python manage.py local_login on) pour éviter tout verrouillage définitif.
+    set_setting("allow_local", "1" if request.form.get("allow_local") else "0")
     flash("Configuration Cloudflare enregistrée.", "success")
     return redirect(url_for("app.dashboard") + "#gestion")
 

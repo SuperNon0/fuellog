@@ -117,8 +117,17 @@ def _admin_hash() -> str | None:
     return get_setting("admin_mdp_hash")
 
 
+def local_login_enabled() -> bool:
+    """Accès local autorisé ? Réglage du store (case à cocher), sinon .env."""
+    from .settings import get_setting
+    s = get_setting("allow_local")
+    if s is None:
+        return bool(current_app.config["ALLOW_LOCAL_LOGIN"])
+    return s == "1"
+
+
 def _local_login_possible() -> bool:
-    return bool(current_app.config["ALLOW_LOCAL_LOGIN"] and _admin_hash())
+    return bool(local_login_enabled() and _admin_hash())
 
 
 def _email_autorise(email: str) -> bool:

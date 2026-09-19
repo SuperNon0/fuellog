@@ -1,0 +1,24 @@
+[Unit]
+Description=FuelLog — suivi carburant & entretien (Flask + gunicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fuellog
+Group=fuellog
+WorkingDirectory=/opt/fuellog
+EnvironmentFile=/opt/fuellog/.env
+ExecStart=/opt/fuellog/.venv/bin/gunicorn -w 2 -b 0.0.0.0:__PORT__ wsgi:app
+# Redémarre TOUJOURS (crash, arrêt inattendu…) et jamais d'abandon après N essais.
+Restart=always
+RestartSec=3
+StartLimitIntervalSec=0
+# Durcissement léger
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/fuellog/data
+
+[Install]
+WantedBy=multi-user.target

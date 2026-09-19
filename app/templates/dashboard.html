@@ -330,6 +330,8 @@
             <input id="cf-aud" type="text" name="aud" value="{{ cf.aud }}" style="margin-top:.35rem">
           </div>
           <label class="secu-check"><input type="checkbox" name="verify" value="1" {{ 'checked' if cf.verify }}> Vérifier le JWT Cloudflare (recommandé en production)</label>
+          <label class="secu-check"><input type="checkbox" name="allow_local" value="1" {{ 'checked' if allow_local }}> Autoriser l'accès local (mot de passe LAN / secours)</label>
+          <p class="param-desc secu-note" style="margin:.1rem 0 0"><span data-ic="warning" style="color:var(--accent3)"></span> Décoché = accès <b>uniquement via Cloudflare</b> : tout accès direct (sans badge) est refusé (403). Ne le décoche que si l'origine est bien injoignable hors Cloudflare, sinon tu risques de te verrouiller dehors.</p>
           <div class="secu-actions">
             <button type="button" id="cf-test" class="param-data-btn">Tester</button>
             <button type="submit" class="btn-primary">Enregistrer</button>

@@ -1,141 +1,164 @@
 # FuelLog
 
-Application web progressive (PWA) de suivi de carburant et d'entretien pour un ou plusieurs véhicules. Accessible depuis n'importe quel appareil (iPhone, iPad, ordinateur) et installable sur l'écran d'accueil.
+Application web (PWA) de **suivi de carburant et d'entretien** pour un ou plusieurs
+véhicules. Installable sur l'écran d'accueil (iPhone, iPad, ordinateur), pensée
+pour un usage **personnel**, derrière **Cloudflare Access** avec un **mot de passe
+local de secours**.
+
+> Version **autonome** (branche `socle-lite`) : Flask, sans dépendance à un
+> « site-base » externe. Sécurité reprise du socle-lite (vérif Cloudflare testée),
+> le reste est embarqué dans le dépôt.
+
+---
 
 ## Fonctionnalités
 
-### Multi-véhicule
-- Gestion de plusieurs véhicules (nom, marque, modèle, immatriculation, année)
-- Chaque plein et entretien est rattaché à un véhicule ; sélecteur dans l'en-tête
+- **Pleins en deux phases** : saisie rapide (phase 1), puis complément au plein
+  suivant (km réels + estimation ODB) → calculs précis.
+- **Plein complet vs ajout partiel** : un ajout est enregistré comme un plein
+  mais exclu des moyennes par plein (conso, coût, fréquence).
+- **Précision ODB** : compare l'autonomie annoncée par la voiture au réel, plus
+  l'« autonomie réelle » (km parcourus + restant ODB au moment du plein).
+- **Statistiques & graphiques** : dépense, litres, conso, prix/L, km, projection
+  annuelle, filtrables par année.
+- **Stations** (API prix carburants gouv.) : proches, favoris, prix, itinéraire.
+- **Entretien** : date, km, catégorie, coût, commentaire, **photos/PDF de factures**
+  et export d'un **carnet PDF** (récap + factures assemblées).
+- **Multi-véhicules** : chaque plein / entretien rattaché à un véhicule.
+- **Sauvegarde / restauration complète** en un fichier `.json` (véhicules, pleins,
+  entretiens, favoris, **factures incluses**) — sert aussi à **migrer** d'une
+  installation à une autre.
+- **Export CSV** (pleins, entretiens).
+- **Accès & sécurité intégré** : configuration Cloudflare (équipe / AUD / vérif
+  JWT) avec bouton **Tester**, mot de passe local, et interrupteur **accès local**.
+- **PWA** : icône d'accueil, plein écran, anti-zoom sur iPhone.
 
-### Suivi des pleins — système en 2 phases
-- **Phase 1** (au moment du plein) : date, carburant, station, estimation ODB, prix total, litres
-- **Phase 2** (au plein suivant) : kilométrage atteint + autonomie ODB restante
-- Le kilométrage de départ est repris automatiquement du plein précédent
+---
 
-### Analyse de précision ODB
-- Calcul automatique : `(km parcourus + ODB restant) / ODB annoncé × 100%`
-- Jauge circulaire + graphique d'évolution, badge coloré par plein
+## Installation (en une commande)
 
-### Statistiques & estimation
-- Total dépensé, litres, prix moyen/L, km, conso L/100km, coût/100km, projection annuelle
-- **Filtre par année**
-- **Onglet Estimation** : consommation, dépense et nombre de pleins estimés pour un trajet, d'après tes moyennes réelles
-- Graphiques Chart.js (conso, dépenses mensuelles, prix au litre, km…)
+### Sur un hôte **Proxmox** (recommandé)
+Colle ceci **dans le shell de l'hôte Proxmox** : ça crée un conteneur LXC Debian 12,
+l'installe et le démarre.
 
-### Carnet d'entretien
-- Interventions : date, kilométrage, catégorie personnalisable, coût, commentaire
-- Pièces jointes (photos JPG/PNG et PDF de factures)
-- **Export « Carnet PDF »** : récapitulatif + toutes les factures scannées assemblées dans un seul PDF, prêt pour la revente
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/proxmox/fuellog-lxc.sh)"
+```
 
-### Stations carburant
-- Carte interactive (Leaflet + OpenStreetMap), prix en temps réel (API gouvernementale française)
-- Filtres par carburant, tri distance / prix, favoris persistants, bouton Waze
-- Bouton GPS pour corriger les coordonnées d'une station via OpenStreetMap
+Options possibles (facultatives) :
 
-### Données & maintenance
-- **Export CSV** des pleins et des entretiens (Excel / Sheets / Numbers)
-- **Sauvegarde / restauration complète** en un fichier (véhicules, pleins, entretiens, favoris, factures incluses) — sert aussi à migrer vers une autre installation
-- **Bouton de mise à jour** intégré (git + npm + redémarrage), avec journal consultable
+```bash
+CTID=211 HOSTNAME=FuelLog PANEL_PORT=8000 ADMIN_PASSWORD='monMotDePasse' \
+  bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/proxmox/fuellog-lxc.sh)"
+```
 
-## Stack technique
+À la fin, le script affiche l'**adresse** (`http://<ip>:<port>`) et le **mot de
+passe admin** (généré si tu n'en as pas fourni).
 
-| Élément | Technologie |
+### Sur une VM / un conteneur **Debian ou Ubuntu** déjà en place (en root)
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/install.sh)
+```
+
+L'installeur crée un utilisateur `fuellog`, un venv Python, le fichier `.env`, un
+**service systemd** (redémarrage automatique au boot et après un crash) puis démarre
+tout. Résumé (IP + mot de passe) affiché à la fin.
+
+---
+
+## Après l'installation
+
+1. **Connexion** : ouvre `http://<ip>:<port>`, entre le **mot de passe admin** du résumé.
+2. **Cloudflare (prod)** : expose l'appli derrière **Cloudflare Access** (tunnel
+   `cloudflared` ou pare-feu IP Cloudflare), puis dans **Gestion → Accès & sécurité** :
+   renseigne **Équipe** (nom seul, ex. `super-nono`) + **AUD**, coche *Vérifier le
+   JWT*, clique **Tester** (doit afficher *JWT OK*), puis **Enregistrer**.
+3. **Accès local** : la case *Autoriser l'accès local* garde le mot de passe LAN de
+   secours. **Décochée = entrée uniquement par Cloudflare** (accès direct → 403).
+   Ne la décoche **qu'après** avoir testé Cloudflare, sinon risque de verrouillage
+   (récupération : `sudo bash deploy/reset-password.sh` puis
+   `python manage.py local_login on`).
+4. **Migrer tes données** depuis l'ancienne version : sur l'ancien FuelLog,
+   **Gestion → Sauvegarde → Télécharger** ; sur le nouveau, **Restaurer une
+   sauvegarde** (le `.json`). Les factures et le carnet sont inclus.
+
+---
+
+## Architecture
+
+Deux couches, **toutes deux dans le dépôt** (aucune dépendance externe) :
+
+```
+fuellog/
+├── panel/            ← fondation (reprise/adaptée de socle-lite)
+│   ├── __init__.py   fabrique Flask (DB + auth + thème + surcouche)
+│   ├── auth.py       Cloudflare Access (JWT RS256+aud+iss) + secours local
+│   ├── config.py     config .env
+│   ├── db.py         SQLite : app_settings (réglages) + amorce mot de passe
+│   ├── settings.py   get/set réglages (Cloudflare, hash mdp, accès local)
+│   ├── templates/    thème : base.html, login.html, oubli.html, bloque.html
+│   └── static/       style du shell + fonts + logo
+├── app/              ← métier FuelLog (les écrans)
+│   ├── __init__.py   register() branche le blueprint
+│   ├── routes.py     API + écrans (pleins, véhicules, entretien, stations, données)
+│   ├── schema.sql    tables métier
+│   ├── templates/    dashboard.html
+│   └── static/       css / js / icônes / vendor / manifest
+├── deploy/           fuellog.service, reset-password.sh
+├── install.sh · proxmox/fuellog-lxc.sh · run.py · wsgi.py · manage.py
+```
+
+- **Sécurité** : le jeton Cloudflare est **vérifié** (signature RS256, `aud`, `iss`) ;
+  on ne fait **jamais** confiance à l'en-tête `Cf-Access-Authenticated-User-Email`
+  seul. La config (équipe/AUD/vérif, mot de passe **hashé**, accès local) est
+  stockée en base (`app_settings`) et éditable depuis l'UI.
+- **Mono-utilisateur** : un seul statut (authentifié ou refusé), pas de comptes/rôles.
+
+---
+
+## Configuration (`.env`)
+
+Voir `.env.example`. Ces variables **amorcent** le 1er lancement ; ensuite la config
+Cloudflare et le mot de passe se règlent **dans l'UI** (Gestion → Accès & sécurité).
+
+| Variable | Effet |
 |---|---|
-| Back-end | Node.js + Express 5 |
-| Base de données | SQLite (better-sqlite3) |
-| Upload / PDF | multer + pdf-lib |
-| Front-end | HTML / CSS / JS vanilla (hors-ligne, sans CDN) |
-| Carte / graphiques | Leaflet.js + Chart.js (hébergés localement) |
-| Connexion | Protection par mot de passe optionnelle (ouvert par défaut) |
-| Process manager | systemd (socle) ou PM2 |
+| `SECRET_KEY` | clé de session (obligatoire, aléatoire) |
+| `DATABASE_PATH` | chemin de la base SQLite |
+| `CF_ACCESS_TEAM_DOMAIN` / `CF_ACCESS_AUD` / `CF_VERIFY_JWT` | Cloudflare Access |
+| `ALLOW_LOCAL_LOGIN` | autoriser le mot de passe local (secours LAN) |
+| `ADMIN_PASSWORD` | mot de passe admin d'amorce (hashé en base au 1er démarrage) |
+| `ALLOWED_EMAILS` | (option) restreindre aussi côté appli |
 
-## Installation
+---
 
-### Option A — Proxmox, une seule commande (recommandé)
+## Opérations
 
-Sur l'**hôte Proxmox**, colle cette commande : elle crée le conteneur LXC Debian 12, l'installe et le démarre entièrement.
+- **Réinitialiser le mot de passe** (serveur, jamais depuis le web) :
+  ```bash
+  sudo bash deploy/reset-password.sh                 # génère et affiche un mot de passe
+  sudo bash deploy/reset-password.sh 'MonNouveauMdp' # fixe un mot de passe précis
+  ```
+- **Se débloquer si l'accès local a été coupé** :
+  ```bash
+  cd /opt/fuellog && python manage.py local_login on
+  ```
+- **Mise à jour** :
+  ```bash
+  cd /opt/fuellog && sudo -u fuellog git pull && \
+    sudo -u fuellog .venv/bin/pip install -q -r requirements.txt && \
+    sudo systemctl restart fuellog
+  ```
+- **Logs** : `journalctl -u fuellog -f`
 
-```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/main/proxmox/fuellog-lxc.sh)"
-```
+---
 
-Personnalisable : `CTID=210 HOSTNAME=fuellog CORES=1 MEMORY=512 DISK=4 bash fuellog-lxc.sh`
-
-### Option B — dans un conteneur/VM Debian existant
-
-En **root**, dans le conteneur :
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/main/install.sh)
-```
-
-`install.sh` crée un **utilisateur dédié non-root** (`fuellog`), installe Node.js, un **service systemd**, un **sudoers minimal** (mise à jour en un clic) et démarre le tout. FuelLog est ensuite sur `http://<ip>:3000`.
-
-- **Mot de passe par défaut : `fuellog`** → change-le dans Paramètres → 🔐 Compte, ou `sudo bash /opt/fuellog/reset-admin-password.sh`.
-- Service : `systemctl status fuellog` · logs : `journalctl -u fuellog -f`
-
-> ⚠️ **Sécurité** — un login mot de passe est intégré, mais garde aussi FuelLog **derrière un accès protégé** (Cloudflare Access ou VPN). L'auto-login Cloudflare se règle dans Paramètres → Compte.
-
-### Option C — PM2 (alternative)
+## Développement local
 
 ```bash
-git clone -b main https://github.com/SuperNon0/fuellog.git /opt/fuellog
-cd /opt/fuellog && npm install --omit=dev
-pm2 start ecosystem.config.js && pm2 save && pm2 startup
-```
-
-## Migrer les données d'une installation à une autre
-
-1. Sur l'**ancienne** installation : onglet **⚙️ Paramètres → « ⬇️ Télécharger la sauvegarde »** (fichier `.json` contenant tout, factures comprises)
-2. Sur la **nouvelle** installation : **Paramètres → « ⬆️ Restaurer une sauvegarde »** et sélectionne ce fichier
-
-La restauration remplace toutes les données actuelles par celles de la sauvegarde.
-
-## Connexion & sécurité
-
-- **Protection optionnelle** : par défaut le panel est **ouvert** (protégé par Cloudflare Access ou le réseau). Tu définis un mot de passe seulement si tu veux une couche en plus, dans Paramètres → 🔐 Compte & sécurité.
-- Une fois défini, **login par mot de passe** (compte `admin`), haché en scrypt, session par cookie signé. Changer le mot de passe exige le mot de passe actuel ; on peut aussi désactiver la protection.
-- **Mot de passe oublié** : `sudo bash /opt/fuellog/reset-admin-password.sh` (sans argument efface le mot de passe → panel ouvert ; avec argument en définit un nouveau), puis redémarrer le service.
-- Secrets (`config.json`, `users.json`) générés au runtime, hors dépôt.
-
-## Mises à jour
-
-En un clic depuis **Paramètres → « ⬆️ Mettre à jour »**. En déploiement systemd, le panel délègue à l'updater root `/usr/local/sbin/fuellog-update` (via un sudoers minimal) qui aligne le dépôt, réinstalle les dépendances et redémarre le service de façon détachée. En cas de souci, **« 📋 Voir le journal de mise à jour »** affiche le détail.
-
-## Variables d'environnement
-
-| Variable | Défaut | Rôle |
-|---|---|---|
-| `PORT` | `3000` | Port d'écoute |
-| `DB_PATH` | `<projet>/fuellog.db` | Emplacement de la base SQLite |
-| `UPLOAD_DIR` | `<projet>/uploads` | Dossier des pièces jointes |
-| `CONFIG_PATH` | `<projet>/config.json` | Secret de session + hash d'origine |
-| `USERS_PATH` | `<projet>/users.json` | Compte admin (hash courant) |
-| `HOST` | `0.0.0.0` | Interface d'écoute |
-| `ALLOW_SELF_UPDATE` | `1` (systemd/ecosystem) | Autorise le bouton de mise à jour |
-| `PM2_NAME` | `fuellog` | Nom du process PM2 à redémarrer (déploiement PM2) |
-
-## Structure
-
-```
-├── server.js              — point d'entrée Express
-├── ecosystem.config.js    — configuration PM2 (prod)
-├── install.sh             — installation automatique (LXC/VM)
-├── db/database.js         — SQLite + migrations
-├── routes/
-│   ├── pleins.js          — CRUD des pleins
-│   ├── entretiens.js      — entretiens + pièces jointes + export PDF
-│   ├── vehicules.js       — CRUD des véhicules
-│   ├── types.js           — types d'entretien
-│   ├── stations.js        — proxy API prix carburants
-│   ├── favoris.js         — stations favorites
-│   ├── donnees.js         — export CSV + sauvegarde/restauration
-│   └── systeme.js         — version + mise à jour
-└── public/
-    ├── index.html
-    ├── css/style.css
-    ├── icons/             — icônes PWA
-    └── js/                — api, app, charts, precision, stations,
-                             entretien, estimation, settings
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env    # règle SECRET_KEY + ADMIN_PASSWORD ; CF_VERIFY_JWT=false en dev
+python run.py           # http://127.0.0.1:8000
 ```
