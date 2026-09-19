@@ -14,7 +14,7 @@ function renderEntretiens() {
   totalEl.textContent = `${entretiens.length} intervention${entretiens.length > 1 ? 's' : ''} · ${total.toFixed(2)} €`;
 
   if (!entretiens.length) {
-    el.innerHTML = '<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">🔧 Aucun entretien enregistré.<br>Ajoute ta première intervention.</div>';
+    el.innerHTML = '<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">' + svgIcon('wrench') + ' Aucun entretien enregistré.<br>Ajoute ta première intervention.</div>';
     return;
   }
 
@@ -27,7 +27,7 @@ function renderEntretiens() {
         return `<div class="ent-file"><a href="${url}" target="_blank"><img src="${url}" alt=""></a>
           <button class="ent-file-del" onclick="supprimerFichier(${f.id})">×</button></div>`;
       }
-      return `<div class="ent-file ent-file-pdf"><a href="${url}" target="_blank">📄<span>PDF</span></a>
+      return `<div class="ent-file ent-file-pdf"><a href="${url}" target="_blank">${svgIcon('file')}<span>PDF</span></a>
         <button class="ent-file-del" onclick="supprimerFichier(${f.id})">×</button></div>`;
     }).join('');
 
@@ -42,8 +42,8 @@ function renderEntretiens() {
       ${e.commentaire ? `<div class="ent-comment">${escapeHtml(e.commentaire)}</div>` : ''}
       ${files ? `<div class="ent-files">${files}</div>` : ''}
       <div class="ent-actions">
-        <button class="btn-edit-d" onclick="ouvrirEditEntretien(${e.id})">✏️ Modifier</button>
-        <button class="btn-del-d" onclick="supprimerEntretien(${e.id})">🗑 Supprimer</button>
+        <button class="btn-edit-d" onclick="ouvrirEditEntretien(${e.id})">${svgIcon('pencil')}Modifier</button>
+        <button class="btn-del-d" onclick="supprimerEntretien(${e.id})">${svgIcon('trash')}Supprimer</button>
       </div>
     </div>`;
   }).join('');

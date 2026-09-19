@@ -64,6 +64,7 @@
 <!-- Sous-barre FuelLog : véhicule + total + accès base -->
 <div class="fuel-subbar">
   <div class="header-left">
+    <span class="veh-ic" data-ic="car" aria-hidden="true"></span>
     <select id="vehicule-select" class="vehicule-select" onchange="switchVehicle(this.value)"></select>
   </div>
   <div style="display:flex;align-items:center;gap:.8rem">
@@ -76,13 +77,13 @@
 </div>
 
 <nav>
-  <button class="active" onclick="showTab('historique',this)" id="nav-histo">📋 Historique</button>
-  <button onclick="showTab('stats',this)">📊 Stats</button>
-  <button onclick="showTab('estimation',this)">🧮 Estimation</button>
-  <button onclick="showTab('precision',this)">🎯 Précision ODB</button>
-  <button onclick="showTab('stations',this)">⛽ Stations</button>
-  <button onclick="showTab('entretien',this)">🔧 Entretien</button>
-  <button onclick="showTab('parametres',this)">⚙️ Gestion</button>
+  <button class="active" onclick="showTab('historique',this)" id="nav-histo"><span data-ic="history"></span>Historique</button>
+  <button onclick="showTab('stats',this)"><span data-ic="bars"></span>Stats</button>
+  <button onclick="showTab('estimation',this)"><span data-ic="calc"></span>Estimation</button>
+  <button onclick="showTab('precision',this)"><span data-ic="target"></span>Précision ODB</button>
+  <button onclick="showTab('stations',this)"><span data-ic="fuel"></span>Stations</button>
+  <button onclick="showTab('entretien',this)"><span data-ic="wrench"></span>Entretien</button>
+  <button onclick="showTab('parametres',this)"><span data-ic="gear"></span>Gestion</button>
 </nav>
 
 <main>
@@ -111,7 +112,7 @@
         <div class="phase1-detail">Station : <span id="phase1-station">—</span></div>
       </div>
       <div style="margin-top:.6rem">
-        <button class="btn-edit" id="btn-phase1-edit" style="font-size:.62rem">✏️ Modifier</button>
+        <button class="btn-edit" id="btn-phase1-edit" style="font-size:.62rem"><span data-ic="pencil"></span>Modifier</button>
       </div>
     </div>
     <div class="table-card">
@@ -179,8 +180,8 @@
   <!-- STATIONS -->
   <div id="tab-stations" class="tab">
     <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem">
-      <button class="tab-btn-s active" onclick="switchStationsTab('proches',this)">📍 Proches</button>
-      <button class="tab-btn-s" onclick="switchStationsTab('favoris',this)">⭐ Favoris</button>
+      <button class="tab-btn-s active" onclick="switchStationsTab('proches',this)"><span data-ic="pin"></span>Proches</button>
+      <button class="tab-btn-s" onclick="switchStationsTab('favoris',this)"><span data-ic="star"></span>Favoris</button>
     </div>
     <div id="s-tab-proches">
       <div class="s-search-bar">
@@ -195,10 +196,10 @@
         <button class="s-pill" onclick="setStationsFilter('E85',this)">E85</button>
       </div>
       <div class="s-sort-bar">
-        <button class="s-sort-pill active" onclick="setSort('distance',this)">📍 Plus proche</button>
-        <button class="s-sort-pill" onclick="setSort('price',this)">💰 Moins cher</button>
+        <button class="s-sort-pill active" onclick="setSort('distance',this)"><span data-ic="pin"></span>Plus proche</button>
+        <button class="s-sort-pill" onclick="setSort('price',this)"><span data-ic="euro"></span>Moins cher</button>
       </div>
-      <div id="stations-loading" class="s-loading" style="display:none">⏳ Recherche des stations proches…</div>
+      <div id="stations-loading" class="s-loading" style="display:none">Recherche des stations proches…</div>
       <div id="stations-error" class="s-error" style="display:none"></div>
       <div id="stations-content" style="display:none">
         <div id="stations-map"></div>
@@ -221,7 +222,7 @@
         <button class="s-pill" onclick="setStationsFilter('E85',this);renderFavorisTab()">E85</button>
       </div>
       <div id="favoris-stations-list"></div>
-      <div id="favoris-stations-empty" class="s-fav-empty" style="display:none">Aucune station favorite.<br>Ajoute-en depuis l'onglet Proches avec ⭐</div>
+      <div id="favoris-stations-empty" class="s-fav-empty" style="display:none">Aucune station favorite.<br>Ajoute-en depuis l'onglet Proches avec l'étoile <span data-ic="star" data-ic-fill="1" style="color:var(--accent)"></span></div>
     </div>
   </div>
 
@@ -232,7 +233,7 @@
         <h2 class="ent-title">Carnet d'entretien</h2>
         <div class="ent-total" id="entretien-total">0 intervention</div>
       </div>
-      <button class="ent-export-btn" onclick="exporterCarnetPDF()">📄 Exporter PDF</button>
+      <button class="ent-export-btn" onclick="exporterCarnetPDF()"><span data-ic="file"></span>Exporter PDF</button>
     </div>
     <button class="ent-add-btn" onclick="openEntretienModal()">＋ Ajouter un entretien</button>
     <div id="entretien-list"></div>
@@ -240,7 +241,7 @@
 
   <!-- ESTIMATION -->
   <div id="tab-estimation" class="tab">
-    <h2 class="estim-title">🧮 Estimation de trajet</h2>
+    <h2 class="estim-title"><span data-ic="calc"></span>Estimation de trajet</h2>
     <p class="estim-sub">Estime ta consommation et ta dépense pour un nombre de kilomètres, d'après tes moyennes réelles.</p>
     <div class="estim-form">
       <div class="field"><label>Véhicule</label><select id="estim-vehicule" onchange="estimVehiculeChange(this.value)"></select></div>
@@ -261,7 +262,7 @@
   <!-- GESTION (réglages, véhicules, types, données) -->
   <div id="tab-parametres" class="tab">
     <div class="param-section">
-      <h2 class="param-title">⚙️ Réglages</h2>
+      <h2 class="param-title"><span data-ic="gear"></span>Réglages</h2>
       <form method="post" action="{{ url_for('app.reglages_enregistrer') }}" class="param-add-row" style="align-items:center">
         <label class="param-desc" for="app_carburant" style="margin:0;flex:1">Carburant présélectionné à la saisie d'un plein</label>
         <select id="app_carburant" name="app_carburant">
@@ -269,20 +270,20 @@
           <option value="{{ c }}" {{ "selected" if app_carburant == c else "" }}>{{ c }}</option>
           {% endfor %}
         </select>
-        <button type="submit">✓</button>
+        <button type="submit" aria-label="Enregistrer"><span data-ic="check"></span></button>
       </form>
     </div>
 
     <div class="param-section">
       <div class="param-head">
-        <h2 class="param-title">🚗 Mes véhicules</h2>
+        <h2 class="param-title"><span data-ic="car"></span>Mes véhicules</h2>
         <button class="param-add-btn" onclick="ouvrirNouveauVehicule()">＋ Ajouter</button>
       </div>
       <div id="param-vehicules"></div>
     </div>
 
     <div class="param-section">
-      <h2 class="param-title">🔧 Types d'entretien</h2>
+      <h2 class="param-title"><span data-ic="wrench"></span>Types d'entretien</h2>
       <p class="param-desc">Ces types apparaissent dans la liste déroulante quand tu ajoutes un entretien.</p>
       <div id="param-types" class="param-chips"></div>
       <div class="param-add-row">
@@ -292,20 +293,20 @@
     </div>
 
     <div class="param-section">
-      <h2 class="param-title">📊 Exporter mes données</h2>
+      <h2 class="param-title"><span data-ic="bars"></span>Exporter mes données</h2>
       <p class="param-desc">Exporte tes pleins et entretiens en tableur (CSV, s'ouvre dans Excel / Sheets / Numbers).</p>
       <div class="param-btn-col">
-        <button class="param-data-btn" onclick="exporterCSV('pleins')">📈 Pleins en CSV</button>
-        <button class="param-data-btn" onclick="exporterCSV('entretiens')">🔧 Entretiens en CSV</button>
+        <button class="param-data-btn" onclick="exporterCSV('pleins')"><span data-ic="download"></span>Pleins en CSV</button>
+        <button class="param-data-btn" onclick="exporterCSV('entretiens')"><span data-ic="download"></span>Entretiens en CSV</button>
       </div>
     </div>
 
     <div class="param-section">
-      <h2 class="param-title">💾 Sauvegarde &amp; restauration</h2>
+      <h2 class="param-title"><span data-ic="save"></span>Sauvegarde &amp; restauration</h2>
       <p class="param-desc">La sauvegarde contient <strong>tout</strong> (véhicules, pleins, entretiens, favoris, factures) dans un seul fichier, réimportable sur une nouvelle installation.</p>
       <div class="param-btn-col">
-        <button class="param-data-btn" onclick="exporterBackup()">⬇️ Télécharger la sauvegarde</button>
-        <button class="param-data-btn param-data-warn" onclick="declencherImport()">⬆️ Restaurer une sauvegarde</button>
+        <button class="param-data-btn" onclick="exporterBackup()"><span data-ic="download"></span>Télécharger la sauvegarde</button>
+        <button class="param-data-btn param-data-warn" onclick="declencherImport()"><span data-ic="upload"></span>Restaurer une sauvegarde</button>
         <input type="file" id="import-file-input" accept="application/json,.json" style="display:none" onchange="importerBackup(this)">
       </div>
     </div>
@@ -314,7 +315,7 @@
     <!-- ACCÈS & SÉCURITÉ (super-admin) : Cloudflare Access + mot de passe local.
          La vérification du jeton réutilise le noyau testé du socle. -->
     <div class="param-section" id="secu-section">
-      <h2 class="param-title">🔐 Accès &amp; sécurité</h2>
+      <h2 class="param-title"><span data-ic="lock"></span>Accès &amp; sécurité</h2>
       <p class="param-desc">Cloudflare Access fait le portier (qui peut ouvrir), le mot de passe local est le secours si Cloudflare tombe. Le jeton est vérifié par le noyau du socle (JWT signé, jamais l'en-tête seul).</p>
 
       <!-- Cloudflare / Accès -->
@@ -423,7 +424,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title">Nouveau plein</div>
     <div id="km-notice" class="km-notice" style="display:none;margin-bottom:1rem">
-      📍 Km de départ repris : <strong id="km-notice-val">—</strong> km
+      <span data-ic="pin" style="color:var(--accent)"></span> Km de départ repris : <strong id="km-notice-val">—</strong> km
     </div>
     <div class="form-grid">
       <div class="field"><label>Date</label><input type="date" id="f-date"></div>
@@ -443,7 +444,7 @@
         <label>Station</label>
         <select id="f-station-select" onchange="onStationSelect(this)">
           <option value="">-- Sélectionner une station --</option>
-          <optgroup label="✏️ Autre"><option value="autre">Saisir manuellement…</option></optgroup>
+          <optgroup label="Autre"><option value="autre">Saisir manuellement…</option></optgroup>
         </select>
       </div>
       <div class="field full" id="f-station-manual" style="display:none">
@@ -458,7 +459,7 @@
           </div>
           <div class="prix-confirm-val" id="prix-confirm-val">—</div>
         </div>
-        <div class="prix-confirm-warn">⚠️ Le prix a peut-être changé depuis cette mise à jour.</div>
+        <div class="prix-confirm-warn"><span data-ic="warning"></span> Le prix a peut-être changé depuis cette mise à jour.</div>
         <div class="prix-confirm-btns">
           <button class="btn-confirm-ok" onclick="confirmerPrix()">Utiliser ce prix</button>
           <button class="btn-confirm-non" onclick="refuserPrix()">Saisir manuellement</button>
@@ -510,7 +511,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Modifier ce plein</div>
-    <button class="btn-phase1" onclick="repasserPhase1()">↩️ Repasser en Phase 1</button>
+    <button class="btn-phase1" onclick="repasserPhase1()"><span data-ic="back"></span>Repasser en Phase 1</button>
     <div class="modal-edit-grid">
       <div class="modal-section-label">Infos générales</div>
       <div class="field"><label>Date</label><input type="date" id="e-date"></div>
@@ -603,6 +604,7 @@
 
 <script src="{{ url_for('app.static', filename='vendor/chart.umd.js') }}"></script>
 <script src="{{ url_for('app.static', filename='vendor/leaflet.js') }}"></script>
+<script src="{{ url_for('app.static', filename='js/icons.js') }}"></script>
 <script src="{{ url_for('app.static', filename='js/api.js') }}"></script>
 <script src="{{ url_for('app.static', filename='js/charts.js') }}"></script>
 <script src="{{ url_for('app.static', filename='js/precision.js') }}"></script>

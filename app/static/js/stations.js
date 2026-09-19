@@ -125,12 +125,12 @@ function renderStationsList(){
         ${s.prix.E85?`<span class="s-tag s-tag-e85">E85 ${s.prix.E85.toFixed(3)}</span>`:''}
       </div>
       <div class="s-actions">
-        <button class="s-btn-voir" onclick="flyToStation('${s.id}')">🗺️ Voir</button>
-        <button class="s-btn-waze" onclick="openWazeStation(${s.lat},${s.lng},'${s.adresse.replace(/'/g,"\\'")}')">🧭 Waze</button>
-        <button class="s-btn-copy" onclick="copyStationAdresse('${s.adresse.replace(/'/g,"\\'")}')">📋 Adresse</button>
-        <button class="s-btn-gps" id="gps-btn-${s.id}" onclick="fixGPS('${s.id}')">📍 GPS</button>
-        <button class="s-btn-fav${isFav?' active':''}" onclick="toggleStationFav('${s.id}')">
-          ${isFav?'★':'☆'}
+        <button class="s-btn-voir" onclick="flyToStation('${s.id}')">${svgIcon('map')}Voir</button>
+        <button class="s-btn-waze" onclick="openWazeStation(${s.lat},${s.lng},'${s.adresse.replace(/'/g,"\\'")}')">${svgIcon('compass')}Waze</button>
+        <button class="s-btn-copy" onclick="copyStationAdresse('${s.adresse.replace(/'/g,"\\'")}')">${svgIcon('copy')}Adresse</button>
+        <button class="s-btn-gps" id="gps-btn-${s.id}" onclick="fixGPS('${s.id}')">${svgIcon('pin')}GPS</button>
+        <button class="s-btn-fav${isFav?' active':''}" onclick="toggleStationFav('${s.id}')" aria-label="Favori">
+          ${svgIcon('star', isFav?{fill:'currentColor'}:{})}
         </button>
       </div>
     </div>`;
@@ -154,7 +154,7 @@ function renderStationsMap(lat,lng){
   // Marqueur position utilisateur
   L.circleMarker([lat,lng],{radius:9,fillColor:'#a78bfa',color:'#fff',weight:2,fillOpacity:1})
     .addTo(stationsMap)
-    .bindPopup('📍 Ma position');
+    .bindPopup(svgIcon('pin') + ' Ma position');
 
   // Marqueurs toutes les stations (pas seulement les visibles)
   stationsData.forEach((s,i)=>{
@@ -173,11 +173,11 @@ function renderStationsMap(lat,lng){
         <div style="margin-bottom:.5rem">${prixLines||'<span style="font-size:11px;color:#6b6f7a">Prix non disponible</span>'}</div>
         <div style="display:flex;gap:.4rem">
           <button onclick="openWazeStation(${s.lat},${s.lng},'${(s.adresse||'').replace(/'/g,"\\'")}');return false"
-            style="flex:1;background:#1d9e75;color:#fff;border:none;border-radius:5px;font-size:11px;padding:.3rem .5rem;cursor:pointer">🧭 Waze</button>
+            style="flex:1;background:#1d9e75;color:#fff;border:none;border-radius:5px;font-size:11px;padding:.3rem .5rem;cursor:pointer">${svgIcon('compass')}Waze</button>
           <button onclick="copyStationAdresse('${(s.adresse||'').replace(/'/g,"\\'")}');return false"
-            style="flex:1;background:#2a2d35;color:#e8c547;border:1px solid rgba(232,197,71,.3);border-radius:5px;font-size:11px;padding:.3rem .5rem;cursor:pointer">📋 Copier</button>
+            style="flex:1;background:#2a2d35;color:#e8c547;border:1px solid rgba(232,197,71,.3);border-radius:5px;font-size:11px;padding:.3rem .5rem;cursor:pointer">${svgIcon('copy')}Copier</button>
           <button id="map-fav-btn-${s.id}" onclick="toggleFavFromMap('${s.id}');return false"
-            style="background:${isFavPop?'rgba(232,197,71,.2)':'#2a2d35'};color:${isFavPop?'#e8c547':'#6b6f7a'};border:1px solid ${isFavPop?'rgba(232,197,71,.3)':'#2a2d35'};border-radius:5px;font-size:13px;padding:.3rem .5rem;cursor:pointer">${isFavPop?'★':'☆'}</button>
+            style="background:${isFavPop?'rgba(232,197,71,.2)':'#2a2d35'};color:${isFavPop?'#e8c547':'#6b6f7a'};border:1px solid ${isFavPop?'rgba(232,197,71,.3)':'#2a2d35'};border-radius:5px;font-size:13px;padding:.3rem .5rem;cursor:pointer">${svgIcon('star', isFavPop?{fill:'currentColor'}:{})}</button>
         </div>
       </div>`;
 
@@ -238,7 +238,7 @@ async function toggleStationFav(stationId){
   }else{
     await addFavori(station);
     stationsFavoris.push(station);
-    toast('Ajouté aux favoris ⭐');
+    toast('Ajouté aux favoris ✓');
   }
   renderStationsList();
   renderFavorisTab();
@@ -276,10 +276,10 @@ function renderFavorisTab(){
         ${s.prix.E85?`<span class="s-tag s-tag-e85">E85 ${s.prix.E85.toFixed(3)}</span>`:''}
       </div>`:''}
       <div class="s-actions">
-        <button class="s-btn-waze" onclick="openWazeStation(${s.lat},${s.lng},'${(s.adresse||'').replace(/'/g,"\\'")}')">🧭 Waze</button>
-        <button class="s-btn-copy" onclick="copyStationAdresse('${(s.adresse||'').replace(/'/g,"\\'")}')">📋 Adresse</button>
-        <button class="s-btn-edit-nom" onclick="openRenameModal('${s.id}')">✏️</button>
-        <button class="s-btn-fav active" onclick="toggleStationFav('${s.id}')">★</button>
+        <button class="s-btn-waze" onclick="openWazeStation(${s.lat},${s.lng},'${(s.adresse||'').replace(/'/g,"\\'")}')">${svgIcon('compass')}Waze</button>
+        <button class="s-btn-copy" onclick="copyStationAdresse('${(s.adresse||'').replace(/'/g,"\\'")}')">${svgIcon('copy')}Adresse</button>
+        <button class="s-btn-edit-nom" onclick="openRenameModal('${s.id}')" aria-label="Renommer">${svgIcon('pencil')}</button>
+        <button class="s-btn-fav active" onclick="toggleStationFav('${s.id}')" aria-label="Favori">${svgIcon('star', {fill:'currentColor'})}</button>
       </div>
     </div>`;
   }).join('');
@@ -292,7 +292,7 @@ function updateStationDropdown(){
   sel.innerHTML=`<option value="">-- Sélectionner une station --</option>`;
   if(stationsFavoris.length){
     const grp=document.createElement('optgroup');
-    grp.label='⭐ Mes favoris';
+    grp.label='Mes favoris';
     stationsFavoris.forEach(s=>{
       const opt=document.createElement('option');
       opt.value=s.id;
@@ -307,7 +307,7 @@ function updateStationDropdown(){
   }
   if(stationsData.length){
     const grp=document.createElement('optgroup');
-    grp.label='📍 Stations proches';
+    grp.label='Stations proches';
     stationsData.slice(0,8).forEach(s=>{
       const opt=document.createElement('option');
       opt.value=s.id;
@@ -321,7 +321,7 @@ function updateStationDropdown(){
     sel.appendChild(grp);
   }
   const grpAutre=document.createElement('optgroup');
-  grpAutre.label='✏️ Autre';
+  grpAutre.label='Autre';
   const optAutre=document.createElement('option');
   optAutre.value='autre';
   optAutre.textContent='Saisir manuellement…';
@@ -387,12 +387,12 @@ async function toggleFavFromMap(stationId){
   }else{
     await addFavori(station);
     stationsFavoris.push(station);
-    toast('Ajouté aux favoris ⭐');
+    toast('Ajouté aux favoris ✓');
   }
   const btn=document.getElementById('map-fav-btn-'+stationId);
   if(btn){
     const isFav=stationsFavoris.some(f=>f.id===stationId);
-    btn.textContent=isFav?'★':'☆';
+    btn.innerHTML=svgIcon('star', isFav?{fill:'currentColor'}:{});
     btn.style.background=isFav?'rgba(232,197,71,.2)':'#2a2d35';
     btn.style.color=isFav?'#e8c547':'#6b6f7a';
     btn.style.borderColor=isFav?'rgba(232,197,71,.3)':'#2a2d35';
@@ -415,7 +415,7 @@ async function addFavoriById(){
     await addFavori(res.station);
     stationsFavoris.push(res.station);
     input.value='';
-    toast('Station ajoutée aux favoris ⭐');
+    toast('Station ajoutée aux favoris ✓');
     renderFavorisTab();
     updateStationDropdown();
   }catch(e){toast('Erreur lors de la recherche.',true);}
@@ -470,7 +470,7 @@ async function fixGPS(stationId){
   const s=stationsData.find(s=>s.id===stationId);
   if(!s)return;
   const btn=document.getElementById('gps-btn-'+stationId);
-  if(btn){btn.disabled=true;btn.textContent='⏳';}
+  if(btn){btn.disabled=true;btn.textContent='…';}
   try{
     // Essai 1 : nom + adresse complète
     // Essai 2 : nom + ville seulement (fallback)

@@ -84,7 +84,7 @@ function renderHistorique(){
   // Lignes historique : entrées complètes (plein ou ajout), du plus récent
   const complets=[...data.filter(p=>p.kmTotal!==null)].reverse();
   const rows=document.getElementById('histo-rows');
-  if(!complets.length){rows.innerHTML='<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">⛽ Aucune entrée complète pour l\'instant.</div>';return;}
+  if(!complets.length){rows.innerHTML='<div class="no-data" style="padding:2rem;text-align:center;color:var(--muted);font-size:.78rem">'+svgIcon('fuel')+' Aucune entrée complète pour l\'instant.</div>';return;}
   rows.innerHTML=complets.map((p,i)=>{
     const km=kmParcourus(p);
     const pr=precision(p);
@@ -124,8 +124,8 @@ function renderHistorique(){
           <div><div class="detail-label">Type</div><div class="detail-val">${labelType(p.type)}</div></div>
         </div>
         <div class="detail-actions">
-          <button class="btn-edit-d" onclick="ouvrirEdit(${p.id})">✏️ Modifier</button>
-          <button class="btn-del-d" onclick="toggleDelConfirm('delc${i}')">🗑 Supprimer</button>
+          <button class="btn-edit-d" onclick="ouvrirEdit(${p.id})">${svgIcon('pencil')}Modifier</button>
+          <button class="btn-del-d" onclick="toggleDelConfirm('delc${i}')">${svgIcon('trash')}Supprimer</button>
         </div>
         <div class="del-confirm" id="delc${i}">
           <p>Voulez-vous vraiment supprimer le plein du ${fd(p.date)} ?</p>
@@ -233,7 +233,7 @@ async function ajouterPhase1(){
   await loadData();
   clearForm();
   document.getElementById('modal-saisie').classList.remove('open');
-  toast(estPlein?'Plein enregistré ⏳':'Ajout enregistré ✓');
+  toast(estPlein?'Plein enregistré — à compléter':'Ajout enregistré ✓');
 }
 
 // ---- PHASE 2 ----

@@ -12,7 +12,7 @@ function estimAverages() {
 function initEstimation() {
   const sel = document.getElementById('estim-vehicule');
   if (sel) {
-    sel.innerHTML = vehicules.map(v => `<option value="${v.id}"${v.id === currentVehicleId ? ' selected' : ''}>🚗 ${escapeHtml(v.nom)}</option>`).join('');
+    sel.innerHTML = vehicules.map(v => `<option value="${v.id}"${v.id === currentVehicleId ? ' selected' : ''}>${escapeHtml(v.nom)}</option>`).join('');
   }
   renderEstimationBase();
   calculerEstimation();

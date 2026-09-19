@@ -17,7 +17,7 @@ async function loadVehicules() {
 function renderVehiculeSelect() {
   const sel = document.getElementById('vehicule-select');
   if (!sel) return;
-  sel.innerHTML = vehicules.map(v => `<option value="${v.id}"${v.id === currentVehicleId ? ' selected' : ''}>🚗 ${escapeHtml(v.nom)}</option>`).join('');
+  sel.innerHTML = vehicules.map(v => `<option value="${v.id}"${v.id === currentVehicleId ? ' selected' : ''}>${escapeHtml(v.nom)}</option>`).join('');
 }
 
 async function switchVehicle(id) {
@@ -50,8 +50,8 @@ async function renderCompte() {
     compteEnabled = !!s.enabled;
   } catch (e) { compteEnabled = false; }
   document.getElementById('compte-state').textContent = compteEnabled
-    ? '🔒 Protection activée — un mot de passe est demandé à la connexion.'
-    : '🔓 Panel ouvert — aucun mot de passe (protégé par Cloudflare Access / réseau).';
+    ? 'Protection activée — un mot de passe est demandé à la connexion.'
+    : 'Panel ouvert — aucun mot de passe (protégé par Cloudflare Access / réseau).';
   document.getElementById('compte-pass-label').textContent = compteEnabled ? 'Changer le mot de passe' : 'Définir un mot de passe';
   document.getElementById('compte-cur-row').style.display = compteEnabled ? '' : 'none';
   document.getElementById('btn-disable').style.display = compteEnabled ? '' : 'none';
@@ -90,8 +90,8 @@ function renderParametres() {
         ${sub ? `<div class="param-item-sub">${escapeHtml(sub)}</div>` : ''}
       </div>
       <div class="param-item-actions">
-        <button onclick="ouvrirEditVehicule(${v.id})">✏️</button>
-        <button onclick="supprimerVehicule(${v.id})">🗑</button>
+        <button onclick="ouvrirEditVehicule(${v.id})" aria-label="Modifier">${svgIcon('pencil')}</button>
+        <button onclick="supprimerVehicule(${v.id})" aria-label="Supprimer">${svgIcon('trash')}</button>
       </div>
     </div>`;
   }).join('');
@@ -179,7 +179,7 @@ function exporterBackup() {
 }
 
 function declencherImport() {
-  if (!confirm('⚠️ Restaurer une sauvegarde REMPLACE toutes les données actuelles (véhicules, pleins, entretiens, favoris).\n\nContinuer ?')) return;
+  if (!confirm('Restaurer une sauvegarde REMPLACE toutes les données actuelles (véhicules, pleins, entretiens, favoris).\n\nContinuer ?')) return;
   document.getElementById('import-file-input').click();
 }
 
@@ -243,12 +243,12 @@ async function mettreAJour() {
   btn.disabled = true; btn.textContent = 'Mise à jour en cours…';
   try {
     const r = await launchUpdate();
-    if (r.error) { toast(r.error, true); btn.disabled = false; btn.textContent = "⬆️ Mettre à jour l'application"; return; }
+    if (r.error) { toast(r.error, true); btn.disabled = false; btn.textContent = "Mettre à jour l'application"; return; }
     toast(r.message || 'Mise à jour lancée…');
     setTimeout(() => location.reload(), 30000);
   } catch (e) {
     toast('Erreur au lancement de la mise à jour.', true);
-    btn.disabled = false; btn.textContent = "⬆️ Mettre à jour l'application";
+    btn.disabled = false; btn.textContent = "Mettre à jour l'application";
   }
 }
 
