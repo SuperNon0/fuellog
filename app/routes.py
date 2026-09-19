@@ -102,11 +102,9 @@ def dashboard():
     cf = cf_diag = None
     has_password = False
     if secu:
-        from flask import session
         cf = cf_config()
         cf_diag = cf_diagnostic()
-        moi = get_compte(session.get("impersonator_id") or session.get("compte_id"))
-        has_password = bool(moi and moi["mdp_hash"])
+        has_password = bool(get_setting("admin_mdp_hash"))
     return render_template("dashboard.html", compte=current_compte(),
                            secu=secu, cf=cf, cf_diag=cf_diag, has_password=has_password)
 
@@ -128,18 +126,14 @@ def reglages_enregistrer():
 
 # ─────────────────────────── ACCÈS & SÉCURITÉ ───────────────────────────────
 # Écran natif « Accès & sécurité » (onglet Gestion) : configuration Cloudflare
-# Access + mot de passe local. On RÉUTILISE le noyau testé de la base — jamais
-# on ne réécrit la vérification JWT ni le hachage. Ces routes ne font que lire
-# les valeurs saisies, appeler les fonctions de la base, puis revenir sur
-# l'écran FuelLog (au lieu de la page /parametres générique de la base).
+# Access + mot de passe local. On RÉUTILISE le noyau testé (panel.auth) — jamais
+# on ne réécrit la vérification JWT ni le hachage. La config et le mot de passe
+# (hashé) sont stockés dans app_settings (panel.settings).
 
 def _secu_gate():
-    """Réservé au super-admin ; interdit pendant une impersonation."""
-    from flask import session
+    """Réservé au super-admin (mono-utilisateur authentifié)."""
     if not is_super_admin():
         return "Réservé au super-admin.", 403
-    if session.get("impersonator_id"):
-        return "Reviens à ton compte d'abord.", 403
     return None
 
 
@@ -163,9 +157,9 @@ def cf_test():
 @bp.route("/reglages/cloudflare", methods=["POST"])
 @login_required
 def reglages_cloudflare():
-    """Enregistre la config Cloudflare (équipe/AUD/vérif) dans le store de la base."""
-    from flask import flash, session
-    if not is_super_admin() or session.get("impersonator_id"):
+    """Enregistre la config Cloudflare (équipe/AUD/vérif) dans le store (app_settings)."""
+    from flask import flash
+    if not is_super_admin():
         flash("Réservé au super-admin.", "error")
         return redirect(url_for("app.dashboard") + "#gestion")
     set_setting("cf_team", normalize_team(request.form.get("team", "")))
@@ -178,20 +172,17 @@ def reglages_cloudflare():
 @bp.route("/reglages/mot-de-passe", methods=["POST"])
 @login_required
 def reglages_mot_de_passe():
-    """Change le mot de passe local (secours LAN). Réutilise le hachage werkzeug de la base."""
-    from flask import flash, session
+    """Change le mot de passe local (secours LAN), hashé dans le store (app_settings)."""
+    from flask import flash
     from werkzeug.security import check_password_hash, generate_password_hash
-    if session.get("impersonator_id"):
-        flash("Reviens à ton compte avant de changer le mot de passe.", "error")
+    if not is_super_admin():
+        flash("Réservé au super-admin.", "error")
         return redirect(url_for("app.dashboard") + "#gestion")
-    moi = get_compte(session.get("compte_id"))
-    if moi is None:
-        flash("Session expirée.", "error")
-        return redirect(url_for("app.dashboard"))
     actuel = request.form.get("actuel", "")
     nouveau = request.form.get("nouveau", "")
     confirme = request.form.get("confirme", "")
-    if moi["mdp_hash"] and not check_password_hash(moi["mdp_hash"], actuel):
+    courant = get_setting("admin_mdp_hash")
+    if courant and not check_password_hash(courant, actuel):
         flash("Mot de passe actuel incorrect.", "error")
         return redirect(url_for("app.dashboard") + "#gestion")
     if len(nouveau) < 8:
@@ -200,10 +191,7 @@ def reglages_mot_de_passe():
     if nouveau != confirme:
         flash("La confirmation ne correspond pas.", "error")
         return redirect(url_for("app.dashboard") + "#gestion")
-    db = get_db()
-    db.execute("UPDATE comptes SET mdp_hash=? WHERE id=?",
-               (generate_password_hash(nouveau), moi["id"]))
-    db.commit()
+    set_setting("admin_mdp_hash", generate_password_hash(nouveau))
     flash("Mot de passe mis à jour.", "success")
     return redirect(url_for("app.dashboard") + "#gestion")
 

@@ -70,7 +70,6 @@
   <div style="display:flex;align-items:center;gap:.8rem">
     <div class="header-stat"><strong id="h-total">—</strong><small>dépensé au total</small></div>
     <div class="fuel-links">
-      {% if any_admin_capability() %}<a class="btn ghost small" href="{{ url_for('accounts.parametres') }}">Paramètres</a>{% endif %}
       <a class="btn ghost small" href="{{ url_for('auth.logout') }}">Déconnexion</a>
     </div>
   </div>
@@ -373,7 +372,7 @@
             <button type="submit" class="btn-primary">Mettre à jour</button>
           </div>
         </form>
-        <p class="param-desc secu-note">Mot de passe oublié ? Il ne se réinitialise pas depuis le web (sécurité). Sur le serveur : <code>sudo bash deploy/reset_admin.sh</code></p>
+        <p class="param-desc secu-note">Mot de passe oublié ? Il ne se réinitialise pas depuis le web (sécurité). Sur le serveur : <code>sudo bash deploy/reset-password.sh</code></p>
       </div>
     </div>
 
