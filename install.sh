@@ -29,7 +29,7 @@ die()  { echo -e " ${RD}✗${CL} $1" >&2; exit 1; }
 
 log "[1/6] Dépendances système"
 apt-get update -y -qq
-apt-get install -y -qq --no-install-recommends python3 python3-venv python3-pip git ca-certificates curl >/dev/null
+apt-get install -y -qq --no-install-recommends python3 python3-venv python3-pip git ca-certificates curl sudo >/dev/null
 
 log "[2/6] Utilisateur système '${APP_USER}'"
 id "${APP_USER}" >/dev/null 2>&1 || useradd --system --shell /usr/sbin/nologin --home "${APP_DIR}" "${APP_USER}"
