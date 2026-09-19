@@ -8,7 +8,7 @@
 #  (utilisateur non-root + service systemd qui redémarre tout seul).
 #
 #  Usage (shell Proxmox) :
-#    bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/proxmox/fuellog-lxc.sh)"
+#    bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/main/proxmox/fuellog-lxc.sh)"
 #
 #  Personnalisation (variables d'environnement, toutes optionnelles) :
 #    CTID=211 HOSTNAME=FuelLog CORES=1 MEMORY=512 DISK=4 PANEL_PORT=8000 \
@@ -26,7 +26,7 @@ STORAGE="${STORAGE:-local-lvm}"
 BRIDGE="${BRIDGE:-vmbr0}"
 PANEL_PORT="${PANEL_PORT:-8000}"
 REPO_URL="${REPO_URL:-https://github.com/SuperNon0/fuellog.git}"
-BRANCH="${BRANCH:-socle-lite}"
+BRANCH="${BRANCH:-main}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
 
 YW=$'\033[33m'; GN=$'\033[1;92m'; RD=$'\033[01;31m'; CL=$'\033[m'

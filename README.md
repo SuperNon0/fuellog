@@ -5,9 +5,9 @@ véhicules. Installable sur l'écran d'accueil (iPhone, iPad, ordinateur), pens�
 pour un usage **personnel**, derrière **Cloudflare Access** avec un **mot de passe
 local de secours**.
 
-> Version **autonome** (branche `socle-lite`) : Flask, sans dépendance à un
-> « site-base » externe. Sécurité reprise du socle-lite (vérif Cloudflare testée),
-> le reste est embarqué dans le dépôt.
+> **Version autonome** : Flask, sans dépendance à un « site-base » externe.
+> Sécurité reprise du socle-lite (vérif Cloudflare testée), le reste est embarqué
+> dans le dépôt.
 
 ---
 
@@ -42,14 +42,14 @@ Colle ceci **dans le shell de l'hôte Proxmox** : ça crée un conteneur LXC Deb
 l'installe et le démarre.
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/proxmox/fuellog-lxc.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/main/proxmox/fuellog-lxc.sh)"
 ```
 
 Options possibles (facultatives) :
 
 ```bash
 CTID=211 HOSTNAME=FuelLog PANEL_PORT=8000 ADMIN_PASSWORD='monMotDePasse' \
-  bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/proxmox/fuellog-lxc.sh)"
+  bash -c "$(wget -qLO - https://raw.githubusercontent.com/SuperNon0/fuellog/main/proxmox/fuellog-lxc.sh)"
 ```
 
 À la fin, le script affiche l'**adresse** (`http://<ip>:<port>`) et le **mot de
@@ -58,7 +58,7 @@ passe admin** (généré si tu n'en as pas fourni).
 ### Sur une VM / un conteneur **Debian ou Ubuntu** déjà en place (en root)
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/main/install.sh)
 ```
 
 L'installeur crée un utilisateur `fuellog`, un venv Python, le fichier `.env`, un
@@ -144,7 +144,8 @@ Cloudflare et le mot de passe se règlent **dans l'UI** (Gestion → Accès & s�
   ```bash
   cd /opt/fuellog && python manage.py local_login on
   ```
-- **Mise à jour** :
+- **Mise à jour** : bouton **Gestion → Mise à jour** (tire `main`, met à jour les
+  dépendances et recharge le service). En ligne de commande :
   ```bash
   cd /opt/fuellog && sudo -u fuellog git pull && \
     sudo -u fuellog .venv/bin/pip install -q -r requirements.txt && \

@@ -378,6 +378,34 @@
       </div>
     </div>
 
+    <!-- Mise à jour de l'application -->
+    <div class="param-section" id="maj-section">
+      <h2 class="param-title"><span data-ic="history"></span>Mise à jour</h2>
+      <p class="param-desc">Récupère la dernière version depuis Git (branche <b>main</b>), met à jour les dépendances et recharge le service.</p>
+      <div class="param-btn-col">
+        <button class="param-data-btn" id="maj-btn" onclick="lancerMaj()"><span data-ic="download"></span>Mettre à jour l'application</button>
+      </div>
+      <pre id="maj-log" style="display:none;margin-top:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.7rem;font-size:.62rem;color:var(--muted);white-space:pre-wrap;word-break:break-word;max-height:220px;overflow:auto"></pre>
+    </div>
+    <script>
+    function lancerMaj(){
+      var btn=document.getElementById('maj-btn'), log=document.getElementById('maj-log');
+      if(btn.disabled)return; btn.disabled=true; var old=btn.innerHTML; btn.textContent='Mise à jour…';
+      log.style.display='block'; log.textContent='==> Mise à jour en cours…\n';
+      function part(p){ return p?(((p.out||'')+(p.err||'')).trim()):''; }
+      fetch("{{ url_for('app.maj') }}",{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+        if(d.error){ log.textContent+='✗ '+d.error+'\n'; btn.disabled=false; btn.innerHTML=old; return; }
+        if(part(d.fetch)) log.textContent+=part(d.fetch)+'\n';
+        if(part(d.reset)) log.textContent+=part(d.reset)+'\n';
+        if(d.pip) log.textContent+=(part(d.pip)||'Dépendances à jour.')+'\n';
+        if(!d.ok){ log.textContent+='✗ Échec (voir ci-dessus).\n'; btn.disabled=false; btn.innerHTML=old; return; }
+        log.textContent+='✓ À jour'+(d.reloaded?' — service rechargé. Rechargement de la page…':' — redémarre le service pour appliquer.')+'\n';
+        if(d.reloaded){ setTimeout(function(){location.reload();}, 3500); }
+        else { btn.disabled=false; btn.innerHTML=old; }
+      }).catch(function(e){ log.textContent+='✗ Erreur réseau : '+e+'\n'; btn.disabled=false; btn.innerHTML=old; });
+    }
+    </script>
+
     <script>
     (function () {
       var btn = document.getElementById("cf-test");

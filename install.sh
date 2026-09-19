@@ -3,10 +3,10 @@
 # FuelLog (autonome) — installation dans un conteneur LXC / une VM (Debian/Ubuntu).
 # À lancer EN ROOT dans le conteneur :
 #
-#   bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/socle-lite/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/SuperNon0/fuellog/main/install.sh)
 #
 # Options (variables d'environnement, toutes optionnelles) :
-#   BRANCH=socle-lite            branche à installer
+#   BRANCH=main                  branche à installer
 #   PORT=8000                    port d'écoute
 #   ADMIN_PASSWORD=...           mot de passe admin (sinon généré aléatoirement)
 #   REPO_URL=...                 dépôt (défaut : SuperNon0/fuellog)
@@ -16,7 +16,7 @@ set -euo pipefail
 APP_DIR="/opt/fuellog"
 APP_USER="fuellog"
 SERVICE="fuellog"
-BRANCH="${BRANCH:-socle-lite}"
+BRANCH="${BRANCH:-main}"
 PORT="${PORT:-8000}"
 REPO_URL="${REPO_URL:-https://github.com/SuperNon0/fuellog.git}"
 

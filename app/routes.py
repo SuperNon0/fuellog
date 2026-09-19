@@ -202,6 +202,55 @@ def reglages_mot_de_passe():
     return redirect(url_for("app.dashboard") + "#gestion")
 
 
+# ─────────────────────────── MISE À JOUR ────────────────────────────────────
+UPDATE_BRANCH = "main"  # branche de référence tirée par le bouton « Mettre à jour »
+
+
+@bp.route("/api/maj", methods=["POST"])
+@api_login_required
+def maj():
+    """Met à jour l'app depuis origin/<UPDATE_BRANCH>, réinstalle les deps, recharge.
+
+    Tourne sous l'utilisateur du service (qui possède le dépôt) → git/pip sans
+    sudo ; le rechargement se fait par SIGHUP au master gunicorn (pas de sudo)."""
+    import os
+    import signal
+    import subprocess
+    if not is_super_admin():
+        return jsonify({"error": "Réservé au super-admin."}), 403
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if not os.path.isdir(os.path.join(root, ".git")):
+        return jsonify({"ok": False, "error": f"{root} n'est pas un dépôt git."}), 400
+
+    def run(cmd, t=180):
+        try:
+            p = subprocess.run(cmd, cwd=root, capture_output=True, text=True, timeout=t,
+                               env={"LC_ALL": "C", "PATH": "/usr/bin:/bin:/usr/local/bin"})
+            return {"code": p.returncode, "out": p.stdout, "err": p.stderr}
+        except Exception as exc:
+            return {"code": -1, "out": "", "err": str(exc)}
+
+    fetch = run(["git", "fetch", "--prune", "origin", UPDATE_BRANCH], 120)
+    reset = run(["git", "reset", "--hard", f"origin/{UPDATE_BRANCH}"], 60)
+    venv_pip = os.path.join(root, ".venv", "bin", "pip")
+    pip = run([venv_pip, "install", "-q", "-r", os.path.join(root, "requirements.txt")], 240) \
+        if (reset["code"] == 0 and os.path.exists(venv_pip)) else None
+    ok = fetch["code"] == 0 and reset["code"] == 0 and (pip is None or pip["code"] == 0)
+
+    reloaded = False
+    if ok:
+        ppid = os.getppid()
+        try:
+            with open(f"/proc/{ppid}/cmdline", "rb") as f:
+                if "gunicorn" in f.read().decode("utf-8", "replace"):
+                    os.kill(ppid, signal.SIGHUP)
+                    reloaded = True
+        except OSError:
+            pass
+    return jsonify({"ok": ok, "branch": UPDATE_BRANCH, "fetch": fetch, "reset": reset,
+                    "pip": pip, "reloaded": reloaded})
+
+
 # ─────────────────────────── PLEINS ─────────────────────────────────────────
 PLEIN_COLS = ("date", "type", "kmDepart", "kmTotal", "estimPlein", "estimRestante",
               "total", "litres", "prixL", "station", "vehicule_id", "estPlein")
