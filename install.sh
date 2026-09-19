@@ -36,8 +36,8 @@ id "${APP_USER}" >/dev/null 2>&1 || useradd --system --shell /usr/sbin/nologin -
 
 log "[3/6] Code source (${REPO_URL} @ ${BRANCH})"
 if [ -d "${APP_DIR}/.git" ]; then
-  git -C "${APP_DIR}" fetch --depth 1 origin "${BRANCH}" -q
-  git -C "${APP_DIR}" checkout -q -B "${BRANCH}" "origin/${BRANCH}"
+  git -C "${APP_DIR}" fetch origin "${BRANCH}" -q
+  git -C "${APP_DIR}" checkout -q -B "${BRANCH}" FETCH_HEAD
 else
   git clone --depth 1 -b "${BRANCH}" "${REPO_URL}" "${APP_DIR}" -q
 fi

@@ -230,8 +230,10 @@ def maj():
         except Exception as exc:
             return {"code": -1, "out": "", "err": str(exc)}
 
-    fetch = run(["git", "fetch", "--prune", "origin", UPDATE_BRANCH], 120)
-    reset = run(["git", "reset", "--hard", f"origin/{UPDATE_BRANCH}"], 60)
+    # On tire la branche de référence puis on aligne le dépôt sur FETCH_HEAD
+    # (robuste même si le clone ne suit pas encore origin/<branch>).
+    fetch = run(["git", "fetch", "origin", UPDATE_BRANCH], 120)
+    reset = run(["git", "reset", "--hard", "FETCH_HEAD"], 60)
     venv_pip = os.path.join(root, ".venv", "bin", "pip")
     pip = run([venv_pip, "install", "-q", "-r", os.path.join(root, "requirements.txt")], 240) \
         if (reset["code"] == 0 and os.path.exists(venv_pip)) else None
