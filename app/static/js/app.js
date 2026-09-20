@@ -89,10 +89,11 @@ function renderHistorique(){
     const km=kmParcourus(p);
     const pr=precision(p);
     const pct=pr?Math.round(pr*100):null;
+    const dFull=fd(p.date), dShort=dFull.replace(/\d{2}(\d{2})$/,'$1');
     return`<div class="histo-row">
       <div class="histo-main">
         <div class="histo-left">
-          <div class="histo-date">${fd(p.date)}</div>
+          <div class="histo-date"><span class="hd-full">${dFull}</span><span class="hd-short">${dShort}</span></div>
           <span class="tag tag-${p.type}">${labelType(p.type)}</span>${!estUnPlein(p)?'<span class="tag tag-ajout">Ajout</span>':''}
           <div class="histo-resume">
             <span class="histo-km">${km?km.toLocaleString('fr-FR')+' km':'—'}</span>

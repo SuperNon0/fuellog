@@ -51,12 +51,12 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 .histo-row{border-bottom:1px solid var(--border);padding:.7rem 0}
 .histo-row:last-child{border-bottom:none}
 .histo-main{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
-.histo-left{display:flex;align-items:center;gap:.45rem;flex:1;min-width:0}
+.histo-left{display:flex;align-items:center;gap:.45rem;flex:1;min-width:0;overflow:hidden}
 .histo-date{font-size:.8rem;font-weight:500;white-space:nowrap}
 .histo-resume{display:flex;align-items:center;gap:.3rem;font-size:.67rem;color:var(--muted);min-width:0}
 .histo-km{white-space:nowrap}
 .histo-odb{white-space:nowrap;color:var(--accent2)}
-.histo-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+.histo-right{display:flex;align-items:center;gap:.45rem;flex-shrink:0;padding-left:.45rem}
 .histo-total{font-size:.88rem;font-weight:500}
 .btn-toggle{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-family:'DM Mono',monospace;font-size:.65rem;padding:.22rem .5rem;cursor:pointer;transition:all .2s;flex-shrink:0}
 .btn-toggle.open{border-color:var(--accent);color:var(--accent)}
@@ -294,13 +294,13 @@ main{width:100%;padding:1rem;padding-bottom:6rem}
 .param-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem}
 .param-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
 .param-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--accent)}
-.param-desc{font-size:.65rem;color:var(--muted);margin:-.3rem 0 .7rem;line-height:1.4}
+.param-desc{font-size:.65rem;color:var(--muted);margin:.35rem 0 .9rem;line-height:1.5}
 .param-add-btn{background:rgba(232,197,71,.1);color:var(--accent);border:1px solid rgba(232,197,71,.25);border-radius:7px;font-family:'DM Mono',monospace;font-size:.65rem;padding:.4rem .7rem;cursor:pointer}
 .param-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem 0;border-bottom:1px solid var(--border)}
 .param-item:last-child{border-bottom:none}
-.param-item-nom{font-size:.82rem;font-weight:500}
+.param-item-nom{font-size:.82rem;font-weight:500;line-height:1.4}
 .param-actif{font-size:.55rem;background:rgba(79,195,161,.15);color:var(--accent2);border-radius:4px;padding:.1rem .35rem;text-transform:uppercase;letter-spacing:.05em;vertical-align:middle}
-.param-item-sub{font-size:.65rem;color:var(--muted);margin-top:.15rem}
+.param-item-sub{font-size:.65rem;color:var(--muted);margin-top:.35rem;line-height:1.4}
 .param-item-actions{display:flex;gap:.3rem;flex-shrink:0}
 .param-item-actions button{background:none;border:1px solid var(--border);border-radius:6px;font-size:.8rem;padding:.3rem .5rem;cursor:pointer}
 .param-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem}
@@ -502,3 +502,16 @@ nav button .ic{ width:1.25em; height:1.25em; }
 /* Icône du sélecteur de véhicule dans la sous-barre */
 .veh-ic{ color:var(--accent); display:inline-flex; align-items:center; }
 .veh-ic .ic{ width:1.1rem; height:1.1rem; }
+
+/* ---- Retours mobile : historique lisible (prix/badge qui ne se chevauchent plus) ---- */
+.hd-short{ display:none; }
+@media (max-width:480px){
+  .histo-km{ display:none; }        /* km parcourus toujours dispo dans le détail (chevron) */
+  .hd-full{ display:none; }
+  .hd-short{ display:inline; }       /* date compacte : 19/09/26 */
+  .histo-date{ font-size:.76rem; }
+  .histo-total{ font-size:.82rem; }
+  .histo-left{ gap:.35rem; }
+  .histo-main{ gap:.5rem; }
+  .tag{ font-size:.55rem; padding:.13rem .4rem; }
+}
