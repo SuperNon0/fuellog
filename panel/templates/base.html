@@ -6,6 +6,15 @@
   <meta name="theme-color" content="#0e0f11">
   <title>{% block title %}{{ brand.prefix }}{{ brand.suffix }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='logo.svg') }}">
+  <!-- PWA / iPhone : icône d'accueil + appli plein écran, sur TOUTES les pages
+       (login inclus) pour qu'« Ajouter à l'écran d'accueil » prenne le vrai logo. -->
+  <link rel="apple-touch-icon" href="{{ url_for('app.static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('app.static', filename='icons/icon-192.png') }}">
+  <link rel="manifest" href="{{ url_for('app.static', filename='manifest.webmanifest') }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="{{ brand.prefix }}{{ brand.suffix }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='fonts.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   {% block head %}{% endblock %}

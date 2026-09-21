@@ -3,14 +3,8 @@
 {% block badge %}suivi carburant & entretien{% endblock %}
 
 {% block head %}
-<!-- PWA / iPhone : icône d'accueil + appli plein écran (la base fournit déjà le
-     viewport anti-zoom et theme-color ; on ajoute seulement manifest + icônes). -->
-<link rel="manifest" href="{{ url_for('app.static', filename='manifest.webmanifest') }}">
-<link rel="apple-touch-icon" href="{{ url_for('app.static', filename='icons/apple-touch-icon.png') }}">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FuelLog">
+<!-- Les balises PWA (manifest, apple-touch-icon, métas plein écran) sont dans
+     base.html → présentes sur toutes les pages (login inclus). -->
 <link rel="stylesheet" href="{{ url_for('app.static', filename='vendor/leaflet.css') }}">
 <link rel="stylesheet" href="{{ url_for('app.static', filename='css/style.css') }}">
 <style>
