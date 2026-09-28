@@ -180,21 +180,42 @@ function closeSaisie(e){
 }
 
 // ---- SELECTION STATION ----
+// Carburant du plein → clés de prix à tenter (le modal groupe SP95/E10).
+function fuelPriceKeys(fType){
+  if(fType==='SP95') return ['E10','SP95'];
+  return [fType];
+}
 function onStationSelect(sel){
   const opt=sel.options[sel.selectedIndex];
   const manualField=document.getElementById('f-station-manual');
   const prixConfirm=document.getElementById('prix-confirm');
   if(sel.value==='autre'){manualField.style.display='block';prixConfirm.style.display='none';return;}
   manualField.style.display='none';
+  let prix=null;
   if(sel.value&&opt.dataset.prix){
-    const prix=parseFloat(opt.dataset.prix);
+    let map={};
+    try{map=JSON.parse(opt.dataset.prix);}catch(e){map={};}
+    if(typeof map==='number'){prix=map;}                       // rétrocompat ancien format
+    else if(map&&typeof map==='object'){
+      const fType=document.getElementById('f-type').value;
+      for(const k of fuelPriceKeys(fType)){ if(map[k]>0){prix=map[k];break;} }
+      if(prix===null){ const first=Object.values(map).find(v=>v>0); if(first)prix=first; }
+    }
+  }
+  if(prix){
     const maj=opt.dataset.maj||'N/A';
-    document.getElementById('prix-confirm-val').textContent=prix.toFixed(3)+' €/L';
-    document.getElementById('prix-confirm-maj').textContent='Dernière mise à jour : '+maj;
+    document.getElementById('f-prixL').value=Number(prix).toFixed(3);   // remplissage automatique
+    document.getElementById('prix-confirm-val').textContent=Number(prix).toFixed(3)+' €/L';
+    document.getElementById('prix-confirm-maj').textContent='Prix appliqué depuis la station · '+maj;
     prixConfirm.style.display='block';
   }else{prixConfirm.style.display='none';}
 }
 
+// Changement de carburant : re-applique le prix de la station sélectionnée.
+function onFuelChange(){
+  const sel=document.getElementById('f-station-select');
+  if(sel&&sel.value&&sel.value!=='autre')onStationSelect(sel);
+}
 function confirmerPrix(){
   const val=parseFloat(document.getElementById('prix-confirm-val').textContent);
   document.getElementById('f-prixL').value=val.toFixed(3);

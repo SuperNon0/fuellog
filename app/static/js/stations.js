@@ -17,7 +17,7 @@ async function loadFavoris(){
     stationsFavoris=dbFavs.map(dbF=>{
       const live=stationsData.find(d=>d.id===dbF.id);
       const mem=stationsFavoris.find(f=>f.id===dbF.id);
-      return {...dbF,prix:(live&&live.prix)||( mem&&mem.prix)||{}};
+      return {...dbF,prix:(live&&live.prix)||(mem&&mem.prix)||dbF.prix||{}};
     });
   } catch(e) { stationsFavoris=[]; }
 }
@@ -298,8 +298,7 @@ function updateStationDropdown(){
       opt.value=s.id;
       opt.textContent=`${s.nom}${s.dist?' — '+s.dist+' km':''}`;
       opt.dataset.nom=s.nom;
-      const p=s.prix&&s.prix[stationsFilter]?s.prix[stationsFilter]:'';
-      opt.dataset.prix=p;
+      opt.dataset.prix=JSON.stringify(s.prix||{});
       opt.dataset.maj=s.maj||'';
       grp.appendChild(opt);
     });
@@ -313,8 +312,7 @@ function updateStationDropdown(){
       opt.value=s.id;
       opt.textContent=`${s.nom} — ${s.dist} km`;
       opt.dataset.nom=s.nom;
-      const p=s.prix&&s.prix[stationsFilter]?s.prix[stationsFilter]:'';
-      opt.dataset.prix=p;
+      opt.dataset.prix=JSON.stringify(s.prix||{});
       opt.dataset.maj=s.maj||'';
       grp.appendChild(opt);
     });
