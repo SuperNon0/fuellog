@@ -699,7 +699,8 @@ def _station_from_gov(s, lat, lng):
         or f"Station {s.get('ville', '')}".strip()
     adresse = ", ".join(x for x in [s.get("adresse"), s.get("cp"), s.get("ville")] if x)
     return {"id": str(s.get("id")), "nom": nom, "adresse": adresse, "ville": s.get("ville", ""),
-            "lat": sLat, "lng": sLng, "dist": dist, "prix": prix, "maj": "N/A", "services": []}
+            "lat": sLat, "lng": sLng, "dist": dist, "prix": prix, "maj": "N/A",
+            "services": [], "source": "gouv"}
 
 
 def _haversine_km(lat1, lng1, lat2, lng2):
@@ -748,9 +749,23 @@ def _osm_fuel_pois(lat, lng, rayon_km):
     return []
 
 
+_CHAINES = ("intermarche", "carrefour", "leclerc", "totalenergies", "total", "esso", "avia",
+            "auchan", "casino", "super u", "hyper u", "u express", "systeme u", "shell", "bp",
+            "agip", "dyneff", "geant", "cora", "colruyt")
+
+
+def _norm(s):
+    """minuscule + sans accents, pour comparer les enseignes."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", (s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
 def _enrich_with_osm(stations, lat, lng, rayon):
-    """Recale chaque station gouv sur le point OSM le plus proche (< 160 m) :
-    vrai nom + position précise. Les PRIX restent ceux de l'API gouv."""
+    """Recale chaque station gouv sur le point OpenStreetMap correspondant :
+    vrai nom + position précise. Les PRIX restent ceux de l'API gouv.
+    - même enseigne (Intermarché ↔ Intermarché…) : tolérance élargie (600 m) ;
+    - sinon : le point OSM le plus proche à moins de 220 m."""
     try:
         pois = _osm_fuel_pois(lat, lng, rayon)
         if not pois:
@@ -758,16 +773,25 @@ def _enrich_with_osm(stations, lat, lng, rayon):
         for s in stations:
             if not s.get("lat") or not s.get("lng"):
                 continue
+            gov = (s["lat"], s["lng"])
+            nom_norm = _norm(s.get("nom"))
+            chaine = next((c for c in _CHAINES if c in nom_norm), None)
             best, best_d = None, 999.0
             for poi in pois:
-                d = _haversine_km(s["lat"], s["lng"], poi["lat"], poi["lng"])
-                if d < best_d:
-                    best_d, best = d, poi
-            if best and best_d <= 0.16:            # même station (< 160 m)
-                if best["nom"]:
+                d = _haversine_km(gov[0], gov[1], poi["lat"], poi["lng"])
+                pn = _norm(poi.get("nom"))
+                meme_enseigne = bool(chaine and pn and chaine in pn)
+                limite = 0.6 if meme_enseigne else 0.22
+                # une correspondance d'enseigne prime sur une simple proximité
+                score = d - (0.4 if meme_enseigne else 0)
+                if d <= limite and score < best_d:
+                    best_d, best = score, poi
+            if best:
+                if best.get("nom"):
                     s["nom"] = best["nom"]
                 s["lat"], s["lng"] = best["lat"], best["lng"]
                 s["dist"] = round(_haversine_km(lat, lng, best["lat"], best["lng"]) * 10) / 10
+                s["source"] = "osm"
     except Exception:
         pass
     return stations

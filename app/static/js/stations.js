@@ -110,7 +110,7 @@ function renderStationsList(){
       <div class="s-top">
         <div class="s-info">
           <div class="s-name">${s.nom}${i===0&&prix?'<span class="s-badge-best">Moins cher</span>':''}</div>
-          <div class="s-dist">${s.dist} km · Maj. ${s.maj}</div>
+          <div class="s-dist">${s.dist} km · Maj. ${s.maj}${s.source==='osm'?' · <span style="color:var(--accent2)">OSM</span>':' · <span style="color:var(--muted)">gouv</span>'}</div>
         </div>
         <div class="s-prix-main-wrap">
           <div class="s-prix-main">${prix?prix.toFixed(3):'—'}</div>
