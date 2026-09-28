@@ -702,6 +702,77 @@ def _station_from_gov(s, lat, lng):
             "lat": sLat, "lng": sLng, "dist": dist, "prix": prix, "maj": "N/A", "services": []}
 
 
+def _haversine_km(lat1, lng1, lat2, lng2):
+    import math
+    R = 6371.0
+    dLat = math.radians(lat2 - lat1)
+    dLng = math.radians(lng2 - lng1)
+    a = (math.sin(dLat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLng / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def _osm_fuel_pois(lat, lng, rayon_km):
+    """Stations-service depuis OpenStreetMap (Overpass) : vrais noms + positions.
+    Gratuit, sans clé. Best-effort : renvoie [] en cas d'indisponibilité."""
+    import requests
+    r = min(int(rayon_km * 1000), 50000)
+    query = (f'[out:json][timeout:12];'
+             f'(node["amenity"="fuel"](around:{r},{lat},{lng});'
+             f'way["amenity"="fuel"](around:{r},{lat},{lng}););'
+             f'out center tags;')
+    for host in ("https://overpass-api.de/api/interpreter",
+                 "https://overpass.kumi.systems/api/interpreter"):
+        try:
+            resp = requests.post(host, data={"data": query},
+                                 headers={"User-Agent": "FuelLog/1.0 (suivi carburant perso)"},
+                                 timeout=12)
+            if resp.status_code != 200:
+                continue
+            pois = []
+            for el in (resp.json().get("elements") or []):
+                if el.get("type") == "node":
+                    plat, plng = el.get("lat"), el.get("lon")
+                else:
+                    c = el.get("center") or {}
+                    plat, plng = c.get("lat"), c.get("lon")
+                if plat is None or plng is None:
+                    continue
+                t = el.get("tags") or {}
+                nom = t.get("name") or t.get("brand") or t.get("operator")
+                pois.append({"lat": plat, "lng": plng, "nom": nom})
+            if pois:
+                return pois
+        except Exception:
+            continue
+    return []
+
+
+def _enrich_with_osm(stations, lat, lng, rayon):
+    """Recale chaque station gouv sur le point OSM le plus proche (< 160 m) :
+    vrai nom + position précise. Les PRIX restent ceux de l'API gouv."""
+    try:
+        pois = _osm_fuel_pois(lat, lng, rayon)
+        if not pois:
+            return stations
+        for s in stations:
+            if not s.get("lat") or not s.get("lng"):
+                continue
+            best, best_d = None, 999.0
+            for poi in pois:
+                d = _haversine_km(s["lat"], s["lng"], poi["lat"], poi["lng"])
+                if d < best_d:
+                    best_d, best = d, poi
+            if best and best_d <= 0.16:            # même station (< 160 m)
+                if best["nom"]:
+                    s["nom"] = best["nom"]
+                s["lat"], s["lng"] = best["lat"], best["lng"]
+                s["dist"] = round(_haversine_km(lat, lng, best["lat"], best["lng"]) * 10) / 10
+    except Exception:
+        pass
+    return stations
+
+
 @bp.route("/api/stations")
 @api_login_required
 def stations():
@@ -718,6 +789,7 @@ def stations():
         data = r.json()
         stations = [_station_from_gov(s, lat, lng) for s in (data.get("results") or [])]
         stations = [s for s in stations if s["lat"] and s["lng"] and (s["dist"] or 0) <= rayon]
+        stations = _enrich_with_osm(stations, lat, lng, rayon)  # noms + positions OSM (gratuit)
         stations.sort(key=lambda s: s["dist"])
         return jsonify({"stations": stations})
     except Exception as exc:
