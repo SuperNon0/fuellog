@@ -76,9 +76,31 @@ def create_app(config_object: type = Config) -> Flask:
         }
 
     @app.after_request
-    def no_store_api(resp):
+    def cache_headers(resp):
+        # /api/* : jamais mis en cache.
         if request.path.startswith("/api/"):
             resp.headers["Cache-Control"] = "no-store"
+        # Fichiers statiques (JS/CSS/manifest…) : autorisés en cache MAIS revalidés
+        # à chaque fois (ETag) → une mise à jour prend effet sans vider le cache.
+        elif request.path.startswith("/app-static/") or request.path.startswith("/static/"):
+            resp.headers["Cache-Control"] = "no-cache"
         return resp
+
+    # Cache-busting : ?v=<hash> ajouté à toutes les URL statiques (url_for), pour
+    # qu'après une mise à jour le navigateur recharge bien les nouveaux JS/CSS.
+    import os as _os
+    import subprocess as _sub
+    import time as _time
+    _root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    try:
+        _asset_v = _sub.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=_root,
+                                     text=True, timeout=3, stderr=_sub.DEVNULL).strip()
+    except Exception:
+        _asset_v = str(int(_time.time()))
+
+    @app.url_defaults
+    def _add_asset_version(endpoint, values):
+        if endpoint in ("static", "app.static") and "v" not in values:
+            values["v"] = _asset_v
 
     return app
