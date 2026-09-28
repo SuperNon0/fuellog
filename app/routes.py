@@ -781,7 +781,7 @@ def _enrich_with_osm(stations, lat, lng, rayon):
                 d = _haversine_km(gov[0], gov[1], poi["lat"], poi["lng"])
                 pn = _norm(poi.get("nom"))
                 meme_enseigne = bool(chaine and pn and chaine in pn)
-                limite = 0.6 if meme_enseigne else 0.22
+                limite = 0.6 if meme_enseigne else 0.30
                 # une correspondance d'enseigne prime sur une simple proximité
                 score = d - (0.4 if meme_enseigne else 0)
                 if d <= limite and score < best_d:
